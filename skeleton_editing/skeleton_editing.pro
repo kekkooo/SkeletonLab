@@ -1,0 +1,104 @@
+#-------------------------------------------------
+#
+# Project created by QtCreator 2014-06-16T18:03:37
+#
+#-------------------------------------------------
+
+QT       += core gui opengl xml widgets
+CONFIG   += qt core opengl thread release app_bundle
+
+QMAKE_CFLAGS_PPC_64     -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
+QMAKE_OBJECTIVE_CFLAGS_PPC_64  -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
+QMAKE_CFLAGS_X86_64     -= -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.5
+QMAKE_OBJECTIVE_CFLAGS_X86_64  -= -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.5
+QMAKE_CXXFLAGS_PPC_64   -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
+QMAKE_CXXFLAGS_X86_64   -= -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.5
+QMAKE_LFLAGS_PPC_64     -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
+QMAKE_LFLAGS_X86_64     -= -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.5
+
+#QMAKE_LFLAGS += -F$$(HOME)/Library/Frameworks
+#INCLUDEPATH += -F$$(HOME)/Library/Frameworks
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+TARGET = skeleton_editing
+TEMPLATE = app
+
+unix{
+INCLUDEPATH *= /Users/simonebarbieri/Developer/libQGLViewer-2.5.3
+LIBS    *= -F/Users/simonebarbieri/Library/Frameworks -framework QGLViewer
+
+INCLUDEPATH += /usr/local/include/
+
+LIBS    += -L/usr/local/lib/ -lCGAL
+LIBS    += -L/usr/local/lib/ -lboost_system
+#LIBS    += -L/opt/local/lib -lboost_system-mt
+
+DEFINES += UNIX
+DEFINES += OSX
+DEFINES += use_boost
+DEFINES += use_cgal
+}
+
+win32{
+DEFINES += WIN32
+DEFINES += _USE_MATH_DEFINES
+}
+
+SOURCES += main.cpp \
+	engine.cpp \
+	bufferStatus.cpp \
+	skel/import.cpp \
+	skel/select.cpp \
+	skel/edit.cpp \
+	GUI/mainwindow.cpp \
+	GUI/viewer.cpp \
+	GUI/skelvisualizationwidget.cpp \
+	utilities/manipulatedFrameSetConstraint.cpp \
+	utilities/object.cpp \
+	GUI/samplingwidget.cpp \
+	mesh/mesh.cpp \
+	utilities/skel_mesh_helper.cpp \
+	GUI/singlebranchingnodedeletionwidget.cpp \
+    GUI/choosepastenodewidget.cpp
+	#GUI/deletenodewithmultipleneighbors.cpp
+
+HEADERS  += engine.h \
+	bufferStatus.h \
+	skel/base.h \
+	skel/bone/base.h \
+	skel/skelpoint/base.h \
+	skel/import.h \
+	skel/export.h \
+	skel/update/color.h \
+	skel/update/topology.h \
+	skel/select.h \
+	skel/edit.h \
+	skel/paint.h \
+	utilities/myGLutils.h \
+	utilities/givensQR.h \
+	utilities/matrix.h \
+	utilities/polyfit.h \
+	utilities/skel_mesh_helper.h \
+	primitives/geometry.h \
+	primitives/BBox.h \
+	primitives/color.h \
+	GUI/mainwindow.h \
+	GUI/viewer.h \
+	GUI/skelvisualizationwidget.h \
+	utilities/manipulatedFrameSetConstraint.h \
+	utilities/object.h \
+	GUI/samplingwidget.h \
+	mesh/mesh.h \
+	mesh/paint.h \
+	mesh/import.h \
+	GUI/singlebranchingnodedeletionwidget.h \
+    GUI/choosepastenodewidget.h
+#GUI/deletenodewithmultipleneighbors.h
+
+FORMS += GUI/mainwindow.ui \
+	GUI/skelvisualizationwidget.ui \
+	GUI/samplingwidget.ui \
+	GUI/singlebranchingnodedeletionwidget.ui \
+    GUI/choosepastenodewidget.ui
+	#GUI/deletenodewithmultipleneighbors.ui
