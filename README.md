@@ -12,13 +12,11 @@ Compiled binaries will be available soon.
 First checkout the source code
 
 ```
-git clone https://github.com/OpenGP/starlab.git
+git clone https://github.com/kekkooo/SkeletonLab.git
 ```
 
 Then setup the necessary paths to include the needed libraries:
-libQGLViewer. (tested with version 2.5.3 )
-CGAL
-Boost
+libQGLViewer. (tested with version 2.5.3 ), CGAL and  Boost
 
 ```
 INCLUDEPATH *= <path to libQGLViewer includes>/libQGLViewer-2.5.3
