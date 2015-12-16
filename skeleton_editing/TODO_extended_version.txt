@@ -1,0 +1,13 @@
+TODO EXTENDED VERSION
+
+In ordine di importanza
+
+- Test Utente
+- Fisica Del Movimento 	( collision detection )
+- Rigging 				( Possibilità di manipolare porzioni rigide inframmezzate da Articulation Nodes)
+- Copy&Paste migliorato ( dopo aver incollato i nodi, rendere possibile la rotazione lungo l'asse di connessione )
+
+
+- ReSampling dell'intero scheletro ( un po' smart, tipo selezionando la percentuale di riduzione )
+- Possibilità di muovere i nodi solo dentro la mesh
+
