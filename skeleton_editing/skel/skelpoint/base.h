@@ -50,19 +50,19 @@ namespace Skel
 
 
 		// Flag handling
-		inline bool isArticulation()	{  return _isA;												} // ARTICULATION
-		inline bool isVisited()			{  return _isV;												} // VISITED
-		inline bool isDeleted()			{  return (neighbors.size() == 0);							} // DELETED
-		inline bool isConnected()		{  return (neighbors.size()  > 0 || root);					} // CONNECTED
-		inline bool isHidden()			{  return hidden;											} // HIDDEN
-		inline bool isLeaf()			{  return (neighbors.size() == 1);							} // LEAF
-		inline bool isJoint()			{  return (neighbors.size() == 2) && !isArticulation();		} // JOINT
-		inline bool isBranchingNode()	{  return (neighbors.size() > 2);							} // BRANCHING NODE
-		inline bool isFeaturePoint()	{  return (isLeaf() || isBranchingNode() || isArticulation());		} // FEATURE POINT
-		inline bool isRoot()			{  return root;												} // ROOT node
-		inline bool isSelected()		{  return _isSel;											} // SELECTED
-		inline bool isTransferOnIt()	{  return _isTOI;											} // TRANSFER ON IT
-		inline bool isSelectedForCopy() {  return _isSFC;											} // SELECTED FOR COPY
+        inline bool isArticulation()	const {  return _isA;												} // ARTICULATION
+        inline bool isVisited()			const {  return _isV;												} // VISITED
+        inline bool isDeleted()			const {  return (neighbors.size() == 0);							} // DELETED
+        inline bool isConnected()		const {  return (neighbors.size()  > 0 || root);					} // CONNECTED
+        inline bool isHidden()			const {  return hidden;											} // HIDDEN
+        inline bool isLeaf()            const {  return (neighbors.size() == 1);							} // LEAF
+        inline bool isJoint()           const {  return (neighbors.size() == 2) && !isArticulation();		} // JOINT
+        inline bool isBranchingNode()   const {  return (neighbors.size() > 2);							} // BRANCHING NODE
+        inline bool isFeaturePoint()	const {  return (isLeaf() || isBranchingNode() || isArticulation());		} // FEATURE POINT
+        inline bool isRoot()			const {  return root;												} // ROOT node
+        inline bool isSelected()		const {  return _isSel;											} // SELECTED
+        inline bool isTransferOnIt()	const {  return _isTOI;											} // TRANSFER ON IT
+        inline bool isSelectedForCopy() const {  return _isSFC;											} // SELECTED FOR COPY
 
 		// Neighbors handling
 		inline void addNeighbor(int neighbor)

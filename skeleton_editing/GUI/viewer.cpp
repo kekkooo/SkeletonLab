@@ -823,7 +823,7 @@ void Viewer::init()
 	setKeyDescription(Qt::Key_S, "Resample the selected bone");
 
 	setMouseBindingDescription(Qt::ShiftModifier, Qt::LeftButton, "Creates a rectangle that select all nodes contained in his area");
-	setMouseBindingDescription(Qt::ShiftModifier, Qt::RightButton, "Only in Node Mode: You must select at least 1 node and almost 2 nodes: if only one node is selected, you will create a new node connected to the selected one else you will create a node between the 2 nodes selected");
+    setMouseBindingDescription(Qt::ShiftModifier, Qt::RightButton, "Only in Node Mode: You must select at least 1 node and almost 2 nodes: if only one node is selected, you will create a new node connected to the selected one else you will create a node between the 2 nodes selected");
 	setMouseBindingDescription(Qt::ControlModifier, Qt::LeftButton, "Rotate the selected nodes basing the rotation on their average position");
 	setMouseBindingDescription(Qt::ControlModifier, Qt::RightButton, "Translate the selcted nodes basing the translation on the mouse movement. If you translate the node near another, they will be merged");
 	setMouseBindingDescription(Qt::AltModifier, Qt::LeftButton, "Creates a rectangle that deselect all nodes contained in his area");
@@ -1151,7 +1151,7 @@ void Viewer::mousePressEvent(QMouseEvent* e)
 			bool found;
 			selectedPoint = camera()->pointUnderPixel(e->pos(), found );
 			findNearest(selectedPoint[0], selectedPoint[1], selectedPoint[2] );
-			update();
+            update();
 		}
 		else
 		{

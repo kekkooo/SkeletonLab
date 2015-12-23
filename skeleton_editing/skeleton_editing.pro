@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui opengl xml widgets
-CONFIG   += qt core opengl thread release app_bundle
+CONFIG   += qt core opengl thread release app_bundle c++11
 
 #QMAKE_CFLAGS_PPC_64     -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
 #QMAKE_OBJECTIVE_CFLAGS_PPC_64  -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
@@ -17,15 +17,18 @@ CONFIG   += qt core opengl thread release app_bundle
 #QMAKE_LFLAGS_X86_64     -= -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.5
 
 QMAKE_CXXFLAGS = -mmacosx-version-min=10.9
-QMAKE_CXXFLAGS = -std=c++11
+#QMAKE_CXXFLAGS = -std=c++11
 QMAKE_CXXFLAGS = -stdlib=libc++
 QMAKE_CFLAGS = -mmacosx-version-min=10.9
+
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
 
 
-#QMAKE_LFLAGS += -F$$(HOME)/Library/Frameworks
-#INCLUDEPATH += -F$$(HOME)/Library/Frameworks
-
+DEFINES += UNIX
+DEFINES += OSX
+DEFINES += use_boost        # <- comment if you do not have Boost installed
+DEFINES += use_cgal         # <- comment if you do not have CGAL installed
+DEFINES += use_gurobi       # <- comment if you do not have GUROBI installed
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = skeleton_editing
@@ -37,10 +40,17 @@ INCLUDEPATH += /usr/local/include/
 INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/libQGLViewer-2.6.3
 INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/boost_1_59_0/BUILD109/include
 INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/cgal-releases-CGAL-4.7/BUILD109/include
+#use_gurobi{
+INCLUDEPATH += /Library/gurobi650/mac64/include
+#}
 LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/libQGLViewer-2.6.3/QGLViewer/ -lQGLViewer
 LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/boost_1_59_0/BUILD109/lib -lboost_system-mt-s
 LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/boost_1_59_0/BUILD109/lib -lboost_thread-mt-s
 LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/cgal-releases-CGAL-4.7/BUILD109/lib -lCGAL
+#use_gurobi{
+LIBS    += -L/Library/gurobi650/mac64/lib -lgurobi_c++
+LIBS    += -L/Library/gurobi650/mac64/lib -lgurobi65
+#}
 
 unix{
 #INCLUDEPATH *= /Users/simonebarbieri/Developer/libQGLViewer-2.5.3
@@ -51,11 +61,6 @@ INCLUDEPATH += /usr/local/include/
 #LIBS    += -L/usr/local/lib/ -lCGAL
 #LIBS    += -L/usr/local/lib/ -lboost_system
 #LIBS    += -L/opt/local/lib -lboost_system-mt
-
-DEFINES += UNIX
-DEFINES += OSX
-DEFINES += use_boost
-DEFINES += use_cgal
 }
 
 win32{
@@ -78,7 +83,9 @@ SOURCES += main.cpp \
 	mesh/mesh.cpp \
 	utilities/skel_mesh_helper.cpp \
 	GUI/singlebranchingnodedeletionwidget.cpp \
-    GUI/choosepastenodewidget.cpp
+    GUI/choosepastenodewidget.cpp \
+    collision_detection/collision_detection.cpp \
+    collision_detection/bvh_balancing.cpp
 	#GUI/deletenodewithmultipleneighbors.cpp
 
 HEADERS  += engine.h \
@@ -111,7 +118,9 @@ HEADERS  += engine.h \
 	mesh/paint.h \
 	mesh/import.h \
 	GUI/singlebranchingnodedeletionwidget.h \
-    GUI/choosepastenodewidget.h
+    GUI/choosepastenodewidget.h \
+    collision_detection/collision_detection.h \
+    collision_detection/bvh_balancing.h
 #GUI/deletenodewithmultipleneighbors.h
 
 FORMS += GUI/mainwindow.ui \

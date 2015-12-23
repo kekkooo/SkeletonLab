@@ -30,6 +30,7 @@
 #include "utilities/manipulatedFrameSetConstraint.h"
 #include "utilities/polyfit.h"
 #include "utilities/skel_mesh_helper.h"
+#include "collision_detection/collision_detection.h"
 
 using namespace UpdateTopology;
 
