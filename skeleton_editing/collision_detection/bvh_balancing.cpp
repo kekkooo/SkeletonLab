@@ -99,6 +99,7 @@ void BVH_balancing::Solve( const std::map<int, std::set<int> > &compatibility, s
           // return results!
 //          printResults(vars, no_bones, no_branchings );
           getResults( index_to_Bn, vars, assignments, no_bones, no_branchings );
+          return;
         }
 
         /************************************/

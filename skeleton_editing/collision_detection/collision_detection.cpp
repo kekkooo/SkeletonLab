@@ -81,10 +81,20 @@ void BVH::Build(){
     std::map<int, BranchingBS_ptr>      bs_branchins;
     std::map<int, std::set<int> >       bones_per_Bn;
     std::map<int, int>                  bone_to_Bn;
-    std::vector<BVH_Sphere>             spheres(skel->points.size());
-    std::vector<BVH_Sphere>             bone_spheres(skel->bones.size());
+    std::map<int, BVH_Sphere>           spheres;// (skel->points.size());
+    std::map<int, BVH_Sphere>           bone_spheres;//(skel->bones.size());
     // build entire shape bounding sphere
-    determineBoundingSphere();
+//    determineBoundingSphere();
+    std::vector<BVH_Sphere> S;
+    for(const Skel::SkelPoint& p : skel->points){
+        S.push_back ( BVH_Sphere( BVH_Point( p.coord.x, p.coord.y, p.coord.z ), p.radius ));
+        spheres [p.id] = S.back();
+
+    }
+    std::cout << "sphere vector created " << std::endl;
+    BVH_MinSphere_ptr ms = minSphere( S );
+    root = cgal_to_BS( ms );
+    std::cout << "root created" << std::endl;
     // build Bones Bounding spheres
     for( int boneID : skel->bones.keys()){
         auto ms = minBoneSphere( boneID );
@@ -95,6 +105,7 @@ void BVH::Build(){
         BVH_Sphere s;
         bone_spheres[boneID] = BVH_Sphere( BVH_Point( center.x, center.y, center.z ), radius );
     }
+    std::cout << "bone spheres created" << std::endl;
     // assign to each branching node the set of bones assigned to it
     // this can be done naively or with some balancing strategy
     for(const Skel::SkelPoint& p : skel->points ){
@@ -105,10 +116,11 @@ void BVH::Build(){
         }
         // build a CGAL sphere for each node of the skeleton
         assert( spheres.size() > p.id );
-        spheres[p.id] =
-            BVH_Sphere( BVH_Point( p.coord.x, p.coord.y, p.coord.z ), p.radius );
+//        spheres[p.id] =
+//            BVH_Sphere( BVH_Point( p.coord.x, p.coord.y, p.coord.z ), p.radius );
 
     }
+    std::cout << "initial bone assignment" << std::endl;
 #if use_gurobi
     BVH_balancing::Solve( bones_per_Bn, skel->bones.size(), bone_to_Bn) ;
     // rebuild the assignments with the computed ones.
@@ -119,6 +131,7 @@ void BVH::Build(){
         }
         bones_per_Bn.at( bone_and_Bn.second ).insert( bone_and_Bn.first );
     }
+    std::cout << "optimized assignment" << std::endl;
 #endif
     //build Branching Nodes bounding spheres Bn_bones -> BranchingNodeID, bones
     for( const auto& Bn_bones : bones_per_Bn ){
@@ -127,13 +140,13 @@ void BVH::Build(){
 
         // calcola la min_bounding_spehre
         // crea la parte di gerarchia.
-        std::vector<BVH_Sphere> bone_spheres;
+        std::vector<BVH_Sphere> this_bone_spheres;
         for( int bone_id : Bn_bones.second ){
-            bone_spheres.push_back( bone_spheres[bone_id] );
+            this_bone_spheres.push_back( spheres[bone_id] );
         }
         // compute the minimal bounding sphere for the bones' bounding sphere,
         // using the trivial assignment or the optimized one
-        BVH_MinSphere_ptr bs = minSphere( bone_spheres );
+        BVH_MinSphere_ptr bs = minSphere( this_bone_spheres );
         BranchingBS_ptr ptr = cgal_to_branchiBS( bs, Bn_bones.first );
 
         // build FP -> Bone hierarchy
@@ -141,16 +154,16 @@ void BVH::Build(){
             ptr.get()->children[bone_id] = bs_bones[bone_id];
         }
     }
+    std::cout << "branching nodes spheres created" << std::endl;
     // split bones and build their hierarchy
 
     typedef std::pair< size_t, size_t > range;              // range.second should be a valid index for the bone it refers to
     typedef std::pair< range, BoundingSphere_ptr > Parent;
     typedef std::stack< Parent > ParentStack;
-    int counter = 0;
     for( int boneID : skel->bones.keys()){
         const Skel::Bone& curr_bone = skel->bones[boneID];
         ParentStack stack;
-        Parent root = make_pair( make_pair( 0, curr_bone.size()), bs_bones[boneID] );
+        Parent root = make_pair( make_pair( 0, curr_bone.size() - 1), bs_bones[boneID] );
         stack.push( root );
         do{
             Parent p = stack.top();
@@ -189,6 +202,7 @@ void BVH::Build(){
 
         }while( !stack.empty( ));
     }
+    std::cout << "hierarchy built" << std::endl;
     has_been_built = true;
 }
 

@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui opengl xml widgets
-CONFIG   += qt core opengl thread release app_bundle c++11
+CONFIG   += qt core opengl thread debug app_bundle c++11
 
 #QMAKE_CFLAGS_PPC_64     -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
 #QMAKE_OBJECTIVE_CFLAGS_PPC_64  -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5

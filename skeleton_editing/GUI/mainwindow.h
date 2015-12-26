@@ -41,16 +41,21 @@ private:
 	QMenu *meshMenu;
 //	QMenu *help;
 
+    // FILE MENU
 	QAction *newSkel;
 	QAction *openSkel;
 	QAction *saveSkel;
 
+    // EDIT MENU
 	QAction *copy;
 	QAction *paste;
 	QAction *undo;
 	QAction *redo;
 	QAction *articulation;
+    QAction *buildBVH;
+//    QAction *freezeNonFeaturePoints;
 
+    // MESH MENU
 	QAction *loadMeshAction;
 	QAction *showHideMesh;
 	QAction *testSkeletonInside;
@@ -59,11 +64,13 @@ private:
     QAction *resetNodesSize;
     QAction *alignSkelWithPCA;
 
+    // POINTS MENU
 	QAction *deleteNode;
 	QAction *deselectAll;
 	QAction *deleteConnection;
 	QAction *addNodeBetween;
 
+    // BONES MENU
 	QAction *sampling;
 
 	void createConnections();

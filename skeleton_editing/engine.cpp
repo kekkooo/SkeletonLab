@@ -6,6 +6,7 @@
 #include <skel/edit.h>
 
 
+
 Engine::Engine()
 {
     this->skel              = NULL;
@@ -25,7 +26,28 @@ void Engine::emitInitialUpdate()
 
 void Engine::loadSkeleton(QString filename)
 {
-	this->skel = Skel::Importer::load_TVCG_2012(filename);
+    QStringList parts = filename.split( QChar( '.' ));
+    int skel_type = -1;
+
+    if ( parts.last( ).toLower() == "skel" )    { skel_type = 0; } // livesu2012
+    if ( parts.last( ).toLower() == "cg" )      { skel_type = 1; } // tagliasacchi2012
+    if ( parts.last( ).toLower() == "cskel" )   { skel_type = 2; } // dey&sun
+
+    switch ( skel_type ) {
+    case 0:
+        this->skel = Skel::Importer::load_TVCG_2012( filename );
+        break;
+    case 1:
+        this->skel = Skel::Importer::load_Tagliasacchi_2012( filename );
+        break;
+    case 2:
+        this->skel = Skel::Importer::load_DeySun_2006( filename );
+        break;
+    default:
+        throw(std::domain_error("File Format not Supported"));
+        break;
+    }
+    //this->skel = Skel::Importer::load_TVCG_2012(filename);
 	emit updateSkeleton(skel);
 }
 
@@ -122,5 +144,14 @@ void Engine::alignSkelWithPCA()
     emit updateSkeleton( skel );
 #endif
 
+}
+
+void Engine::buildBoundingVolumeHierarchy(){
+    if( NULL == this->bvh ){
+        assert( NULL != this->skel );
+        bvh = new CollisionDetection::BVH( this->skel );
+    }
+    else bvh->Clear();;
+    bvh->Build();
 }
 

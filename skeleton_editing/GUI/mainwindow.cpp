@@ -59,8 +59,9 @@ MainWindow::~MainWindow()
 	delete ui;
 }
 
-void MainWindow::createActions()
-{
+void MainWindow::createActions(){
+
+    // FILE MENU
 	newSkel = new QAction(tr("&New Skeleton"), this);
 	newSkel->setShortcuts(QKeySequence::New);
 	newSkel->setStatusTip(tr("Create new skeleton"));
@@ -76,6 +77,7 @@ void MainWindow::createActions()
 	saveSkel->setStatusTip(tr("Save the skeleton in a file"));
 	connect(saveSkel, SIGNAL(triggered()), this, SLOT(saveSkeletonToFile()));
 
+    //EDIT MENU
 	undo = new QAction(tr("&Undo"), this);
 	undo->setShortcuts(QKeySequence::Undo);
 	undo->setStatusTip(tr("Undo last edit"));
@@ -92,6 +94,11 @@ void MainWindow::createActions()
 	articulation->setStatusTip(tr("Set a node as articulation"));
 	connect(articulation, SIGNAL(triggered(bool)), viewer, SLOT(setNodeArticulationState(bool)));
 
+    buildBVH = new QAction(tr("&Build BVH"), this);
+    buildBVH->setStatusTip(tr("Build collision detection hierarchy"));
+    connect( buildBVH, SIGNAL(triggered()), engine, SLOT(buildBoundingVolumeHierarchy()));
+
+    // POINTS MENU
 	deleteNode = new QAction(tr("&Delete Node"), this);
 	deleteNode->setShortcut(QKeySequence::Delete);
 	deleteNode->setStatusTip(tr("Delete selected node"));
@@ -127,6 +134,7 @@ void MainWindow::createActions()
 	sampling->setStatusTip(tr("Resample a bone"));
 	connect(sampling, SIGNAL(triggered()), viewer, SLOT(action_sampling()));
 
+    //MESH MENU
 	loadMeshAction = new QAction(tr("&Load Mesh"), this);
 	loadMeshAction->setStatusTip(tr("Load a polygonal mesh"));
 	connect( loadMeshAction, SIGNAL(triggered()), this, SLOT(openMesh()));
@@ -172,6 +180,7 @@ void MainWindow::createMenus()
 	editMenu->addAction(paste);
 	editMenu->addSeparator();
 	editMenu->addAction(articulation);
+    editMenu->addAction(buildBVH);
 
 	pointsMenu = menuBar()->addMenu(tr("&Points"));
 	pointsMenu->addAction(deleteNode);
@@ -290,7 +299,8 @@ void MainWindow::openSkeletonFile()
 	QString filename = QFileDialog::getOpenFileName(NULL,
 													"Open skel (TVCG)",
 													".",
-													"skel files (*.skel );;");
+                                                    "LIVESU2012 (*.skel );; TAGLIASACCHI 2012(*.cg);; DEY_SUN 2006 (*.cskel);;"
+                                                    );
 	if (!filename.isEmpty()) emit loadSkeleton(filename);
 
 
