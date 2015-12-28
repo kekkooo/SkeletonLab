@@ -30,7 +30,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = skeleton_editing
 TEMPLATE = app
-
+#commento
 #INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/eigen/
 #INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/gsl-lite/include/
 INCLUDEPATH += /usr/local/include/
