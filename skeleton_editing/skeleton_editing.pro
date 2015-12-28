@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui opengl xml widgets
-CONFIG   += qt core opengl thread release app_bundle
+CONFIG   += qt core opengl thread release app_bundle c++11
 
 QMAKE_CFLAGS_PPC_64     -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
 QMAKE_OBJECTIVE_CFLAGS_PPC_64  -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
@@ -16,6 +16,9 @@ QMAKE_CXXFLAGS_X86_64   -= -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.5
 QMAKE_LFLAGS_PPC_64     -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
 QMAKE_LFLAGS_X86_64     -= -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.5
 
+
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.11
+
 #QMAKE_LFLAGS += -F$$(HOME)/Library/Frameworks
 #INCLUDEPATH += -F$$(HOME)/Library/Frameworks
 
@@ -24,21 +27,29 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = skeleton_editing
 TEMPLATE = app
 
-unix{
-INCLUDEPATH *= /Users/simonebarbieri/Developer/libQGLViewer-2.5.3
-LIBS    *= -F/Users/simonebarbieri/Library/Frameworks -framework QGLViewer
+#osx{
+
+INCLUDEPATH += /Users/francescousai/Documents/libs/boost_1_59_0/BUILD109/include
+INCLUDEPATH += /Users/francescousai/Documents/libs/cgal-releases-CGAL-4.7/BUILD109/include/
+INCLUDEPATH += /Users/francescousai/Documents/libs/libQGLViewer-2.6.3/
+LIBS += -stdlib=libc++
+
+LIBS += -L/Users/francescousai/Documents/libs/libQGLViewer-2.6.3/QGLViewer              -lQGLViewer
+LIBS += -L/Users/francescousai/Documents/libs/boost_1_59_0/BUILD109/lib                -lboost_system-mt-s
+LIBS += -L/Users/francescousai/Documents/libs/boost_1_59_0/BUILD109/lib                -lboost_thread-mt-s
+LIBS += -L/Users/francescousai/Documents/libs/cgal-releases-CGAL-4.7/BUILD109/lib      -lCGAL
 
 INCLUDEPATH += /usr/local/include/
 
-LIBS    += -L/usr/local/lib/ -lCGAL
-LIBS    += -L/usr/local/lib/ -lboost_system
+#LIBS    += -L/usr/local/lib/ -lCGAL
+#LIBS    += -L/usr/local/lib/ -lboost_system
 #LIBS    += -L/opt/local/lib -lboost_system-mt
 
 DEFINES += UNIX
 DEFINES += OSX
 DEFINES += use_boost
 DEFINES += use_cgal
-}
+#}
 
 win32{
 DEFINES += WIN32
