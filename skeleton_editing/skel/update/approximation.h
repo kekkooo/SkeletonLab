@@ -6,6 +6,7 @@
 #include <map>
 #include <queue>
 #include <vector>
+#include <limits>
 #define APPROXIMATION_EPSILON 0.0000001
 
 namespace Skel{
@@ -33,8 +34,8 @@ void approximate( Skel::CurveSkeleton& cs, double error_threshold ){
 
         RMesh::CGAL_Segment seg( cgal_points[b.front], cgal_points[b.back()] );
         q.push( seg );
-
-        while( !q.empty( )){
+        double error = std::numeric_limits<double>::max();
+        while( !q.empty( ) && error > error_threshold ){
             // get current segment
             RMesh::CGAL_Segment curr = q.front();
             q.pop();
