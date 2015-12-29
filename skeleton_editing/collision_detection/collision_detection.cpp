@@ -237,34 +237,6 @@ void BVH::Build(){
     root.get()->printPretty("  ", true);
 }
 
-void BVH::print(){
-    std::cout << " Root node "; this->root.get()->print();
-    typedef const std::shared_ptr< const BoundingSphere> bs_ptr_for_queue;
-//    std::queue< const BoundingSphere_ptr > q;
-    std::queue< bs_ptr_for_queue > q;
-    const BoundingSphere_ptr level_delimiter;
-    assert( level_delimiter == nullptr );
 
-    std::cout << "ROOT : "; root.get()->print();
-    std::cout << std::endl << std::endl;
-
-    q.push(root);
-    while( !q.empty( )){
-
-        auto curr = q.front();
-        q.pop();
-        std::cout << "curr has " << curr.get()->children.size() << " children " << std::endl;
-        //if( curr == nullptr ) { q.push( level_delimiter ); std::cout << "LEVEL DOWN " << std::endl << std::endl; continue; }
-        for( const auto& item : curr.get()->children ){
-            std::cout << item.first << " ";
-            assert( curr.get() != nullptr );
-            item.second.get()->print();
-            std::cout << std::endl;
-            q.push( item.second );
-        }
-
-    }
-
-}
 
 }

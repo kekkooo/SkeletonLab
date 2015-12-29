@@ -120,7 +120,8 @@ HEADERS  += engine.h \
 	GUI/singlebranchingnodedeletionwidget.h \
     GUI/choosepastenodewidget.h \
     collision_detection/collision_detection.h \
-    collision_detection/bvh_balancing.h
+    collision_detection/bvh_balancing.h \
+    skel/update/approximation.h
 #GUI/deletenodewithmultipleneighbors.h
 
 FORMS += GUI/mainwindow.ui \

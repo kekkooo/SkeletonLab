@@ -36,6 +36,7 @@ namespace RMesh
 	typedef K::Point_3                                                                      CGAL_Point;
 	typedef K::Triangle_3                                                                   CGAL_Triangle;
 	typedef K::Line_3                                                                       CGAL_Line;
+    typedef K::Segment_3                                                                    CGAL_Segment;
 	typedef K::Plane_3                                                                      CGAL_Plane;
 	typedef K::Vector_3                                                                     CGAL_Vector;
 	typedef std::list<CGAL_Triangle>::iterator                                              CGAL_Triangle_Iterator;

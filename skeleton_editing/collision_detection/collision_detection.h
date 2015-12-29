@@ -119,8 +119,7 @@ public:
     BVH( const Skel::CurveSkeleton* skeleton );
     void Build();
     void Clear();
-    bool IsColliding( const BVH& other ) const;
-    void print();
+    bool IsColliding( const BVH& other ) const;    
 };
 
 }
