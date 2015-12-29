@@ -18,12 +18,27 @@ void getResults( const std::map<int, int>& index_to_id, const std::vector<GRBVar
         for( size_t c = 0; c < no_branchings; ++c ){
             size_t idx = matIndex( r, c, no_branchings );
             double v = vars[idx].get(GRB_DoubleAttr_X);
+//            std::cout << v << "\t";
             if( v > 0.5 ) {
                 std::cout << "Branch " << r << " has been assigned to Bn " << c << std::endl;
-                bone_assignments[ index_to_id.at( c ) ] = r;
+                bone_assignments[ r ] = index_to_id.at( c );
             }
         }
+//        std::cout << std::endl;
     }
+//    assert(false);
+//    for( size_t r = 0; r < no_bones; ++r ){
+//        for( size_t c = 0; c < no_branchings; ++c ){
+//            size_t idx = matIndex( r, c, no_branchings );
+//            double v = vars[idx].get(GRB_DoubleAttr_X);
+//            std::cout << v << "\t";
+////            if( v > 0.5 ) {
+////                std::cout << "Branch " << r << " has been assigned to Bn " << c << std::endl;
+////                bone_assignments[ index_to_id.at( c ) ] = r;
+////            }
+//        }
+//        std::cout << std::endl;
+//    }
 }
 
 void BVH_balancing::Solve( const std::map<int, std::set<int> > &compatibility, size_t no_bones,
@@ -56,7 +71,7 @@ void BVH_balancing::Solve( const std::map<int, std::set<int> > &compatibility, s
                 var_name << "A( " << r << ", " << c << " )";
                 assert( compatibility.count( index_to_Bn[c] ) > 0 );
                 bool is_connected = compatibility.at( index_to_Bn[c] ).count( r );
-                vars[idx] = model.addVar( 0.0, ( is_connected > 0 ? 1.0 : 0.0 ), 1.0, GRB_CONTINUOUS, var_name.str());
+                vars[idx] = model.addVar( 0.0, ( is_connected > 0 ? 1.0 : 0.0 ), 1.0, GRB_BINARY, var_name.str());
             }
         }
         model.update();

@@ -2,6 +2,7 @@
 #include <set>
 #include <stack>
 #include <limits>
+#include <queue>
 #if use_gurobi
 #include "bvh_balancing.h"
 #endif
@@ -89,7 +90,6 @@ void BVH::Build(){
     for(const Skel::SkelPoint& p : skel->points){
         S.push_back ( BVH_Sphere( BVH_Point( p.coord.x, p.coord.y, p.coord.z ), p.radius ));
         spheres [p.id] = S.back();
-
     }
     std::cout << "sphere vector created " << std::endl;
     BVH_MinSphere_ptr ms = minSphere( S );
@@ -121,6 +121,17 @@ void BVH::Build(){
 
     }
     std::cout << "initial bone assignment" << std::endl;
+    /* DEBUG */
+//    std::map<int, std::set<int> >       bones_per_Bn;
+//    std::map<int, int>                  bone_to_Bn;
+    for( const auto& item : bones_per_Bn ){
+        std::cout << item.first << " has bones :" << std::endl;
+        for( int bone : item.second ){
+            std::cout << bone << ", ";
+        }
+        std::cout << std::endl;
+    }
+    /* END DEBUG */
 #if use_gurobi
     BVH_balancing::Solve( bones_per_Bn, skel->bones.size(), bone_to_Bn) ;
     // rebuild the assignments with the computed ones.
@@ -131,13 +142,20 @@ void BVH::Build(){
         }
         bones_per_Bn.at( bone_and_Bn.second ).insert( bone_and_Bn.first );
     }
+    /* DEBUG */
     std::cout << "optimized assignment" << std::endl;
+    for( const auto& item : bones_per_Bn ){
+        std::cout << item.first << " has bones :" << std::endl;
+        for( int bone : item.second ){
+            std::cout << bone << ", ";
+        }
+        std::cout << std::endl;
+    }
+    /* END DEBUG */
 #endif
+
     //build Branching Nodes bounding spheres Bn_bones -> BranchingNodeID, bones
     for( const auto& Bn_bones : bones_per_Bn ){
-        // this can be optimizied using a vector of pointers or references to BVH_sphere
-        // but a new min_sphere function should be defined.
-
         // calcola la min_bounding_spehre
         // crea la parte di gerarchia.
         std::vector<BVH_Sphere> this_bone_spheres;
@@ -149,12 +167,17 @@ void BVH::Build(){
         BVH_MinSphere_ptr bs = minSphere( this_bone_spheres );
         BranchingBS_ptr ptr = cgal_to_branchiBS( bs, Bn_bones.first );
 
+        // root-Bn hierarchy
+        root.get()->children[ptr.get()->ID] = ptr;
+
         // build FP -> Bone hierarchy
         for( int bone_id : Bn_bones.second ){
             ptr.get()->children[bone_id] = bs_bones[bone_id];
         }
+        std::cout << ptr.get()->ID << " has #children = " << ptr.get()->children.size() << std::endl;
     }
-    std::cout << "branching nodes spheres created" << std::endl;
+    std::cout << "branching nodes spheres created" << std::endl;    
+    std::cout << "root has #children = " << root.get()->children.size() << std::endl;
     // split bones and build their hierarchy
 
     typedef std::pair< size_t, size_t > range;              // range.second should be a valid index for the bone it refers to
@@ -174,7 +197,7 @@ void BVH::Build(){
             std::vector<BVH_Sphere> left, right;
             size_t mid = r.first + (( r_size % 2 == 0 ) ? r_size/2 - 1 : r_size/2 );
 
-            std::cout << "Range is : ( " << r.first << ", " << r.second << " )" << std::endl;
+            std::cout << "Range is : ( " << r.first << ", " << r.second << " ) : "  << r_size << std::endl;
 
             if( r_size > 2 ){
                 // build the sphere vectors for ranges r.first, mid and mid+1, r.second
@@ -192,7 +215,13 @@ void BVH::Build(){
             BVH_MinSphere_ptr   left_min   = minSphere( left );
             BVH_MinSphere_ptr   right_min  = minSphere( right );
             BoundingSphere_ptr  left_bs    = cgal_to_BS( left_min  ); //,  left.size()  == 1 ? curr_bone[r.first]  : NODE_ID_OFFSET_FOR_RANGE + counter++ );
+            std::stringstream ss,ss2;
+            ss << r.first << ":" << mid;
+            left_bs.get()->text = ss.str();
+
             BoundingSphere_ptr  right_bs   = cgal_to_BS( right_min ); //, right.size() == 1 ? curr_bone[r.second] : NODE_ID_OFFSET_FOR_RANGE + counter++ );
+            ss2 << mid + 1 << ":" << r.second;
+            right_bs.get()->text = ss2.str();
             // assign the two spheres to p's children and
             p.second.get()->children[0] = left_bs;
             p.second.get()->children[1] = right_bs;
@@ -204,6 +233,38 @@ void BVH::Build(){
     }
     std::cout << "hierarchy built" << std::endl;
     has_been_built = true;
+    //this->print();
+    root.get()->printPretty("  ", true);
+}
+
+void BVH::print(){
+    std::cout << " Root node "; this->root.get()->print();
+    typedef const std::shared_ptr< const BoundingSphere> bs_ptr_for_queue;
+//    std::queue< const BoundingSphere_ptr > q;
+    std::queue< bs_ptr_for_queue > q;
+    const BoundingSphere_ptr level_delimiter;
+    assert( level_delimiter == nullptr );
+
+    std::cout << "ROOT : "; root.get()->print();
+    std::cout << std::endl << std::endl;
+
+    q.push(root);
+    while( !q.empty( )){
+
+        auto curr = q.front();
+        q.pop();
+        std::cout << "curr has " << curr.get()->children.size() << " children " << std::endl;
+        //if( curr == nullptr ) { q.push( level_delimiter ); std::cout << "LEVEL DOWN " << std::endl << std::endl; continue; }
+        for( const auto& item : curr.get()->children ){
+            std::cout << item.first << " ";
+            assert( curr.get() != nullptr );
+            item.second.get()->print();
+            std::cout << std::endl;
+            q.push( item.second );
+        }
+
+    }
+
 }
 
 }
