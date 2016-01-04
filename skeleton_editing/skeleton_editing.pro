@@ -30,17 +30,16 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = skeleton_editing
 TEMPLATE = app
-#commento
 #INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/eigen/
 #INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/gsl-lite/include/
 INCLUDEPATH += /usr/local/include/
-INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/libQGLViewer-2.6.3
-INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/boost_1_59_0/BUILD109/include
-INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/cgal-releases-CGAL-4.7/BUILD109/include
-LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/libQGLViewer-2.6.3/QGLViewer/ -lQGLViewer
-LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/boost_1_59_0/BUILD109/lib -lboost_system-mt-s
-LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/boost_1_59_0/BUILD109/lib -lboost_thread-mt-s
-LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/cgal-releases-CGAL-4.7/BUILD109/lib -lCGAL
+INCLUDEPATH += /Users/francescousai/Documents/libs/libQGLViewer-2.6.3
+INCLUDEPATH += /Users/francescousai/Documents/libs/boost_1_59_0/BUILD109/include
+INCLUDEPATH += /Users/francescousai/Documents/libs/cgal-releases-CGAL-4.7/BUILD109/include
+LIBS    += -L/Users/francescousai/Documents/libs/libQGLViewer-2.6.3/QGLViewer/ -lQGLViewer
+LIBS    += -L/Users/francescousai/Documents/libs/boost_1_59_0/BUILD109/lib -lboost_system-mt-s
+LIBS    += -L/Users/francescousai/Documents/libs/boost_1_59_0/BUILD109/lib -lboost_thread-mt-s
+LIBS    += -L/Users/francescousai/Documents/libs/cgal-releases-CGAL-4.7/BUILD109/lib -lCGAL
 
 unix{
 #INCLUDEPATH *= /Users/simonebarbieri/Developer/libQGLViewer-2.5.3
@@ -63,60 +62,60 @@ DEFINES += WIN32
 DEFINES += _USE_MATH_DEFINES
 }
 
-SOURCES += main.cpp \
-	engine.cpp \
-	bufferStatus.cpp \
-	skel/import.cpp \
-	skel/select.cpp \
-	skel/edit.cpp \
-	GUI/mainwindow.cpp \
-	GUI/viewer.cpp \
-	GUI/skelvisualizationwidget.cpp \
-	utilities/manipulatedFrameSetConstraint.cpp \
-	utilities/object.cpp \
-	GUI/samplingwidget.cpp \
-	mesh/mesh.cpp \
-	utilities/skel_mesh_helper.cpp \
-	GUI/singlebranchingnodedeletionwidget.cpp \
-    GUI/choosepastenodewidget.cpp
-	#GUI/deletenodewithmultipleneighbors.cpp
+SOURCES +=  main.cpp \
+            engine.cpp \
+            bufferStatus.cpp \
+            skel/import.cpp \
+            skel/select.cpp \
+            skel/edit.cpp \
+            GUI/mainwindow.cpp \
+            GUI/viewer.cpp \
+            GUI/skelvisualizationwidget.cpp \
+            utilities/manipulatedFrameSetConstraint.cpp \
+            utilities/object.cpp \
+            GUI/samplingwidget.cpp \
+            mesh/mesh.cpp \
+            utilities/skel_mesh_helper.cpp \
+            GUI/singlebranchingnodedeletionwidget.cpp \
+            GUI/choosepastenodewidget.cpp
+#            GUI/deletenodewithmultipleneighbors.cpp
 
 HEADERS  += engine.h \
-	bufferStatus.h \
-	skel/base.h \
-	skel/bone/base.h \
-	skel/skelpoint/base.h \
-	skel/import.h \
-	skel/export.h \
-	skel/update/color.h \
-	skel/update/topology.h \
-	skel/select.h \
-	skel/edit.h \
-	skel/paint.h \
-	utilities/myGLutils.h \
-	utilities/givensQR.h \
-	utilities/matrix.h \
-	utilities/polyfit.h \
-	utilities/skel_mesh_helper.h \
-	primitives/geometry.h \
-	primitives/BBox.h \
-	primitives/color.h \
-	GUI/mainwindow.h \
-	GUI/viewer.h \
-	GUI/skelvisualizationwidget.h \
-	utilities/manipulatedFrameSetConstraint.h \
-	utilities/object.h \
-	GUI/samplingwidget.h \
-	mesh/mesh.h \
-	mesh/paint.h \
-	mesh/import.h \
-	GUI/singlebranchingnodedeletionwidget.h \
-    GUI/choosepastenodewidget.h
-#GUI/deletenodewithmultipleneighbors.h
+            bufferStatus.h \
+            skel/base.h \
+            skel/bone/base.h \
+            skel/skelpoint/base.h \
+            skel/import.h \
+            skel/export.h \
+            skel/update/color.h \
+            skel/update/topology.h \
+            skel/select.h \
+            skel/edit.h \
+            skel/paint.h \
+            utilities/myGLutils.h \
+            utilities/givensQR.h \
+            utilities/matrix.h \
+            utilities/polyfit.h \
+            utilities/skel_mesh_helper.h \
+            primitives/geometry.h \
+            primitives/BBox.h \
+            primitives/color.h \
+            GUI/mainwindow.h \
+            GUI/viewer.h \
+            GUI/skelvisualizationwidget.h \
+            utilities/manipulatedFrameSetConstraint.h \
+            utilities/object.h \
+            GUI/samplingwidget.h \
+            mesh/mesh.h \
+            mesh/paint.h \
+            mesh/import.h \
+            GUI/singlebranchingnodedeletionwidget.h \
+            GUI/choosepastenodewidget.h
+#            GUI/deletenodewithmultipleneighbors.h
 
-FORMS += GUI/mainwindow.ui \
-	GUI/skelvisualizationwidget.ui \
-	GUI/samplingwidget.ui \
-	GUI/singlebranchingnodedeletionwidget.ui \
-    GUI/choosepastenodewidget.ui
-	#GUI/deletenodewithmultipleneighbors.ui
+FORMS +=    GUI/mainwindow.ui \
+            GUI/skelvisualizationwidget.ui \
+            GUI/samplingwidget.ui \
+            GUI/singlebranchingnodedeletionwidget.ui \
+            GUI/choosepastenodewidget.ui
+#            GUI/deletenodewithmultipleneighbors.ui

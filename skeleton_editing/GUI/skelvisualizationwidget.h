@@ -16,15 +16,16 @@ public:
 	~SkelVisualizationWidget();
 
 signals:
-	void featurePointsChanged(      bool);
-	void bonePointsChanged(         bool);
-	void maxBallsChanged(           bool);
-	void maxBallsBoneChanged(       bool);
-	void defaultColor(              bool);
-	void boneColor(                 bool);
-	void editModeChanged(			bool);
-	void nodeFusionChanged(			bool);
-	void meshLimitChanged(			bool);
+    void featurePointsChanged(          bool);
+    void bonePointsChanged(             bool);
+    void maxBallsChanged(               bool);
+    void maxBallsBoneChanged(           bool);
+    void defaultColor(                  bool);
+    void boneColor(                     bool);
+    void editModeChanged(               bool);
+    void nodeFusionChanged(             bool);
+    void meshLimitChanged(              bool);
+    void constrainedTranslationChanged( bool);
 
 public slots:
 	void changeEditType(Qt::CheckState checkState);
@@ -50,6 +51,8 @@ private slots:
 	void on_nodeFusionCB_stateChanged(int arg1);
 
 	void on_meshLimitCB_stateChanged(int arg1);
+
+    void on_constrainedTranslationCB_stateChanged(int arg1);
 
 private:
 	Ui::SkelVisualizationWidget *ui;

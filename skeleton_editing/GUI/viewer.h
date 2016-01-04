@@ -73,9 +73,10 @@ public slots:
 	void drawSkelDefaultColors	(bool b);
 	void drawSkelBoneColors		(bool b);
 
-	void editTypeChanged		(bool b);
-	void nodeFusionChanged		(bool b);
-	void meshLimitChanged		(bool b);
+    void editTypeChanged                (bool b);
+    void nodeFusionChanged              (bool b);
+    void meshLimitChanged               (bool b);
+    void constrainedTranslationChanged  (bool b);
 
 	// This method is called when a new skeleton is loaded. Initializations.
 	void load_new_skeleton();
@@ -170,6 +171,8 @@ private:
 	void removeIdFromSelection(int id);
 	void startManipulation();
 
+	void findConstrainedNodesForManipulation(const SkelPoint selectedNode, QList<int> &constrainedNodes, Point3d &rotationCenter);
+
 	//removes a joint and all the bones that are not connected to another joint.
 	//the operation will be a success only if in the skeleton there are at most
 	//2 joints.
@@ -234,6 +237,7 @@ private:
 
 	bool canMove;
 	bool meshLimit;
+    bool constrainedTranslation;
 
 	QVector<Point3d> prevPositions;
 

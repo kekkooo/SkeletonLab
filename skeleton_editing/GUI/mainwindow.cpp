@@ -211,15 +211,16 @@ void MainWindow::createConnections()
 	connect( engine, SIGNAL(updateMesh(RMesh::mesh*)),             viewer, SLOT(updateMesh(RMesh::mesh*)));
 
 	// FROM skelVisualizationWidget to viewer
-	connect( skelVisualizationWidget, SIGNAL(featurePointsChanged(bool)),   viewer, SLOT(drawSkelFPs(bool)));
-	connect( skelVisualizationWidget, SIGNAL(bonePointsChanged(bool)),      viewer, SLOT(drawSkelBonePs(bool)));
-	connect( skelVisualizationWidget, SIGNAL(maxBallsChanged(bool)),        viewer, SLOT(drawSkelMaxBalls(bool)));
-	connect( skelVisualizationWidget, SIGNAL(maxBallsBoneChanged(bool)),    viewer, SLOT(drawSkelMaxBallsBP(bool)));
-	connect( skelVisualizationWidget, SIGNAL(defaultColor(bool)),           viewer, SLOT(drawSkelDefaultColors(bool)));
-	connect( skelVisualizationWidget, SIGNAL(boneColor(bool)),              viewer, SLOT(drawSkelBoneColors(bool)));
-	connect( skelVisualizationWidget, SIGNAL(editModeChanged(bool)),        viewer, SLOT(editTypeChanged(bool)));
-	connect( skelVisualizationWidget, SIGNAL(nodeFusionChanged(bool)),		viewer, SLOT(nodeFusionChanged(bool)));
-	connect( skelVisualizationWidget, SIGNAL(meshLimitChanged(bool)),		viewer, SLOT(meshLimitChanged(bool)));
+    connect( skelVisualizationWidget, SIGNAL(featurePointsChanged(bool)),           viewer, SLOT(drawSkelFPs(bool)));
+    connect( skelVisualizationWidget, SIGNAL(bonePointsChanged(bool)),              viewer, SLOT(drawSkelBonePs(bool)));
+    connect( skelVisualizationWidget, SIGNAL(maxBallsChanged(bool)),                viewer, SLOT(drawSkelMaxBalls(bool)));
+    connect( skelVisualizationWidget, SIGNAL(maxBallsBoneChanged(bool)),            viewer, SLOT(drawSkelMaxBallsBP(bool)));
+    connect( skelVisualizationWidget, SIGNAL(defaultColor(bool)),                   viewer, SLOT(drawSkelDefaultColors(bool)));
+    connect( skelVisualizationWidget, SIGNAL(boneColor(bool)),                      viewer, SLOT(drawSkelBoneColors(bool)));
+    connect( skelVisualizationWidget, SIGNAL(editModeChanged(bool)),                viewer, SLOT(editTypeChanged(bool)));
+    connect( skelVisualizationWidget, SIGNAL(nodeFusionChanged(bool)),              viewer, SLOT(nodeFusionChanged(bool)));
+    connect( skelVisualizationWidget, SIGNAL(meshLimitChanged(bool)),               viewer, SLOT(meshLimitChanged(bool)));
+    connect( skelVisualizationWidget, SIGNAL(constrainedTranslationChanged(bool)),  viewer, SLOT(constrainedTranslationChanged(bool)));
 
 	// FROM mainwindow to viewer
 	connect( this, SIGNAL(loadSkeleton(QString)), viewer, SLOT(load_new_skeleton()));

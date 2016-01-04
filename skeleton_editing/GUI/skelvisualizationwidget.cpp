@@ -66,7 +66,26 @@ void SkelVisualizationWidget::on_editTypeCB_stateChanged(int arg1)
 
 void SkelVisualizationWidget::on_meshLimitCB_stateChanged(int arg1)
 {
-	emit this->meshLimitChanged( arg1 == (int)Qt::Checked );
+    emit this->meshLimitChanged( arg1 == (int)Qt::Checked );
+}
+
+void SkelVisualizationWidget::on_constrainedTranslationCB_stateChanged(int arg1)
+{
+    emit this->constrainedTranslationChanged( arg1 == (int)Qt::Checked );
+
+	if (ui->constrainedTranslationCB->isChecked())
+	{
+		ui->maxBallsBoneCB->setChecked(false);
+		ui->maxBallsBoneCB->setCheckable(false);
+
+		ui->bonePointsCB->setChecked(false);
+		ui->bonePointsCB->setCheckable(false);
+	}
+	else
+	{
+		ui->maxBallsBoneCB->setCheckable(true);
+		ui->bonePointsCB->setCheckable(true);
+	}
 }
 
 void SkelVisualizationWidget::on_nodeFusionCB_stateChanged(int arg1)

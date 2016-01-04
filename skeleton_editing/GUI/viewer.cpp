@@ -156,7 +156,14 @@ void Viewer::nodeFusionChanged(bool b)
 
 void Viewer::meshLimitChanged(bool b)
 {
-	meshLimit = b;
+    meshLimit = b;
+}
+
+void Viewer::constrainedTranslationChanged(bool b)
+{
+	clearSelection();
+
+    constrainedTranslation = b;
 }
 
 void Viewer::load_new_skeleton()
@@ -172,6 +179,7 @@ void Viewer::load_new_skeleton()
 	nodeFusionActive = false;
 	canMove = true;
 	meshLimit = false;
+    constrainedTranslation = false;
 
 	_mesh = NULL;
 
@@ -1196,13 +1204,12 @@ void Viewer::mouseMoveEvent(QMouseEvent* e)
 		rectangle_.setBottomRight(e->pos());
 		updateGL();
 	}
-	else if (selectionMode_ == NONE && _mesh != NULL && meshLimit)
+    else if (selectionMode_ == NONE && _mesh != NULL && meshLimit)
 	{
 		canMove = true;
 		#ifdef UNIX
         for( int i = 0; i < selection_.size(); ++i)
         {
-
             if(!RMesh::Utils::skel_mesh_helper::is_inside((*AABB_Tree), skel->points[selection_[i]].coord))
             {
                 canMove = false;
@@ -1840,7 +1847,7 @@ void Viewer::drawSelectionRectangle() const
 	glEnd();
 
 	glLineWidth(2.0);
-	glColor4f(0.4f, 0.4f, 0.5f, 0.5f);
+    glColor4f(0.4f, 0.4f, 0.5f, 0.5f);
 	glBegin(GL_LINE_LOOP);
 	glVertex2i(rectangle_.left(),  rectangle_.top());
 	glVertex2i(rectangle_.right(), rectangle_.top());
@@ -1873,7 +1880,30 @@ void Viewer::removeIdFromSelection(int id)
 
 void Viewer::startManipulation()
 {
-	if(currentEditType == NODE_EDIT)
+	if (constrainedTranslation && selection_.size() == 1)
+	{
+		QList<int> constrainedNodes;
+		Point3d rotatonCenter;
+
+		findConstrainedNodesForManipulation(skel->points[selection_[0]], constrainedNodes, rotatonCenter);
+
+		ManipulatedFrameSetConstraint* mfsc = (ManipulatedFrameSetConstraint*)(manipulatedFrame()->constraint());
+		mfsc->clearSet();
+		mfsc->setSkel(*skel);
+
+		// Add all selected points to the list of points that will be manipulated.
+		for (int i = 0; i < constrainedNodes.size(); i++)
+		{
+			mfsc->addObjectToSet(constrainedNodes[i]);
+		}
+
+		// Set the average position ad the centre of the manipulation.
+		if (constrainedNodes.size() > 0)
+		{
+			manipulatedFrame()->setPosition(rotatonCenter.x, rotatonCenter.y, rotatonCenter.z);
+		}
+	}
+	else if (currentEditType == NODE_EDIT)
 	{
 		Vec averagePosition;
 		ManipulatedFrameSetConstraint* mfsc = (ManipulatedFrameSetConstraint*)(manipulatedFrame()->constraint());
@@ -1889,9 +1919,9 @@ void Viewer::startManipulation()
 		// The average position of the selected points is calculated.
 		for (int i = 0; i < selection_.size(); i++)
 		{
-			averagePosition.x += this->skel->points[selection_[i]].coord.x;
-			averagePosition.y += this->skel->points[selection_[i]].coord.y;
-			averagePosition.z += this->skel->points[selection_[i]].coord.z;
+            averagePosition.x += this->skel->points[selection_[i]].coord.x;
+            averagePosition.y += this->skel->points[selection_[i]].coord.y;
+            averagePosition.z += this->skel->points[selection_[i]].coord.z;
 		}
 
 		// Set the average position ad the centre of the manipulation.
@@ -1928,6 +1958,77 @@ void Viewer::startManipulation()
 			manipulatedFrame()->setPosition(averagePosition / selection_.size());
 		}
 	}
+}
+
+// selectedNodeId must be a node with two neighbours
+void Viewer::findConstrainedNodesForManipulation(const SkelPoint selectedNode, QList<int> &constrainedNodes, Point3d &rotationCenter)
+{
+	int neighbour = 0;
+
+	constrainedNodes.push_back(selectedNode.id);
+	int previousId = selectedNode.id;
+
+	SkelPoint currentNode = skel->points[selectedNode.neighbors[neighbour]];
+
+	if (selectedNode.neighbors.size() != 1)
+	{
+		while (!currentNode.isLeaf())
+		{
+			if (currentNode.isBranchingNode())
+			{
+				constrainedNodes.clear();
+
+				constrainedNodes.push_back(selectedNode.id);
+
+				neighbour++;
+
+				previousId = selectedNode.id;
+
+				currentNode = skel->points[selectedNode.neighbors[neighbour]];
+			}
+
+			constrainedNodes.push_back(currentNode.id);
+
+			if (skel->points[currentNode.neighbors[0]].id == previousId)
+			{
+				previousId = currentNode.id;
+
+				currentNode = skel->points[currentNode.neighbors[1]];
+			}
+			else
+			{
+				previousId = currentNode.id;
+
+				currentNode = skel->points[currentNode.neighbors[0]];
+			}
+		}
+
+		constrainedNodes.push_back(currentNode.id);
+
+		previousId = selectedNode.id;
+	}
+
+	currentNode = skel->points[selectedNode.neighbors[(++neighbour) % selectedNode.neighbors.size()]];
+
+	while (!currentNode.isArticulation() && !currentNode.isBranchingNode())
+	{
+		constrainedNodes.push_back(currentNode.id);
+
+		if (skel->points[currentNode.neighbors[0]].id == previousId)
+		{
+			previousId = currentNode.id;
+
+			currentNode = skel->points[currentNode.neighbors[1]];
+		}
+		else
+		{
+			previousId = currentNode.id;
+
+			currentNode = skel->points[currentNode.neighbors[0]];
+		}
+	}
+
+	rotationCenter = currentNode.coord;
 }
 
 int Viewer::checkIfClose(Point3d s, float radius)
