@@ -4,7 +4,7 @@ Interactive Tool to Create, Edit, and Repair Curve-Skeletons
 Source code from the paper "Skeleton Lab: an Interactive Tool to Create, Edit, and Repair Curve-Skeletons".
 The paper has been awardeed as Best Paper at the conference STAG 2015 held in Verona (October 2015)
 
-Full paper, slides and bibtex entry available at [link](http://francescousai.info/skel_lab.html).
+Full paper, slides and bibtex entry available at the [Project Page](http://francescousai.info/skel_lab.html).
 
 Compiled binaries will be available soon.
 
