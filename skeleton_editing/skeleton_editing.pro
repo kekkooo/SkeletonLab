@@ -121,7 +121,9 @@ HEADERS  += engine.h \
     GUI/choosepastenodewidget.h \
     collision_detection/collision_detection.h \
     collision_detection/bvh_balancing.h \
-    skel/update/approximation.h
+    skel/update/approximation.h \
+    utilities/SQEM.h \
+    utilities/seqm_helper.h
 #GUI/deletenodewithmultipleneighbors.h
 
 FORMS += GUI/mainwindow.ui \

@@ -4,6 +4,7 @@
 #include <skel/export.h>
 #include <skel/import.h>
 #include <skel/edit.h>
+#include <skel/update/approximation.h>
 
 
 
@@ -155,3 +156,30 @@ void Engine::buildBoundingVolumeHierarchy(){
     bvh->Build();
 }
 
+void Engine::approximateSkel(){
+// TODO it should open a widget allowing to select a "fidelity" or a target reduction of the number of nodes
+    double min_radius = std::numeric_limits<double>::max();
+    double multiplier = 0.25;
+//    for( const Skel::SkelPoint& p : skel->points ) { if( min_radius > p.radius ){ min_radius = p.radius; }}
+
+//    double threshold = ( min_radius / 2.0 ) * multiplier;
+    double threshold = multiplier;    
+
+    Skel::Update::approximate( *this->skel, threshold );
+    emit updateSkeleton( skel );
+}
+
+
+void Engine::centerSkeletonWithSQEM(){
+    //find the selected node
+    int selected_id = -1;
+    for( const auto& p : skel->points ){
+        if( p.isSelected()){ selected_id = p.id; break; }
+    }
+
+    if( _skelMeshHelper == NULL ) return;
+    RMesh::mesh::buildColors( *_mesh );
+    _skelMeshHelper->centeringWithSQEM( *skel, true, selected_id );
+    emit updateSkeleton( skel );
+
+}

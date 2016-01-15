@@ -1,6 +1,8 @@
 #ifdef use_cgal
 #include "skel_mesh_helper.h"
 #include <CGAL/intersections.h>
+#include "SQEM.h"
+#include "seqm_helper.h"
 
 RMesh::Utils::skel_mesh_helper::skel_mesh_helper()
 {
@@ -304,6 +306,126 @@ void Utils::skel_mesh_helper::compute_intersections(CGAL_Plane plane,
             }
         }
     }
+}
+
+
+
+void Utils::skel_mesh_helper::centeringWithSQEM(CurveSkeleton &cs, bool refit, int nodeID){
+
+    assert( nodeID < cs.points.size() );
+    ColorF intersected_face_color( 1.0, 0.0, 0.0 );
+
+    // seleziona un punto e questo verrà ricentrato
+    const SkelPoint& p = cs.points.at( nodeID );
+
+    size_t sqem_count = 0;
+    SQEM sqem;
+    bool first = true;
+
+    CGAL_Point coord = build_CGAL_Point( p.coord );
+    for( int neighbor : p.neighbors ){
+        CGAL_Point cgal_neighbor = build_CGAL_Point( cs.points[neighbor].coord );
+        CGAL_Vector dir     = cgal_neighbor - coord;
+        CGAL_Plane plane( coord, dir );
+
+        std::list<Plane_Intersection> intersections;
+//        AABB_Tree->all_intersected_primitives( plane, std::back_inserter( intersections ));
+        AABB_Tree->all_intersections( plane, std::back_inserter( intersections ));        
+
+        CGAL_Point farthest = coord;
+        double max_dist = std::numeric_limits<double>::min();
+
+        for(std::list<Plane_Intersection>::iterator it = intersections.begin(); it != intersections.end(); ++it)
+        {
+            Plane_Intersection intersection = *it;
+            std::list<CGAL_Triangle>::iterator tri_it = intersection->second;
+
+            auto pos =std::distance( trilist.begin(), tri_it );
+            this->_mesh->f_colors[pos] = intersected_face_color;
+
+
+            CGAL_Triangle t = *tri_it;
+            CGAL_Plane sup_plane = t.supporting_plane();
+            if(  sup_plane.has_on_positive_side( coord ) ){ continue; }
+            CGAL_Point point_on_plane = sup_plane.point();
+            CGAL_Vector plane_dir = sup_plane.orthogonal_vector();
+            double length = sqrt( plane_dir.squared_length());
+            CGAL_Vector plane_normal( plane_dir.x()/length, plane_dir.y()/length, plane_dir.z()/length );
+
+
+            std::cout << "point on plane: " << point_on_plane << std::endl
+                      << "normal        : " << plane_normal.x() << ", " << plane_normal.y() << ", " << plane_normal.z() << std::endl;
+
+            double dist = CGAL::squared_distance( farthest, point_on_plane );
+            if( dist > max_dist ){
+                farthest = point_on_plane;
+                max_dist = dist;
+            }
+            if( first ){
+                first = false;
+                sqem.setFromPlan ( SEQM_helper::SEQM_Point( point_on_plane.x(), point_on_plane.y(), point_on_plane.z()),
+                                   SEQM_helper::SEQM_Point( plane_normal.x(), plane_normal.y(), plane_normal.z() ));
+                ++sqem_count;
+            }else{
+                sqem += SQEM( SEQM_helper::SEQM_Point( point_on_plane.x(), point_on_plane.y(), point_on_plane.z()),
+                              SEQM_helper::SEQM_Point( plane_normal.x(), plane_normal.y(), plane_normal.z() ));
+                ++sqem_count;
+            }
+        }
+        // need to find two intersections on the mesh in order to bound the sphere
+        // one is the farthest point, the other one can be found using a mesh ray intersction
+        CGAL_Ray query_ray( farthest, coord );
+
+        std::list<Ray_intersection> ray_intersections;
+        AABB_Tree->all_intersections( query_ray,  std::back_inserter( ray_intersections ) );
+
+        float min_dist      = MAXFLOAT;
+        CGAL_Point opposite = farthest;
+
+        for(std::list<Ray_intersection>::iterator it = ray_intersections.begin(); it != ray_intersections.end(); ++it){
+            Ray_intersection obj = *it;
+
+            if ( CGAL_Point *curr = boost::get<CGAL_Point>( &( obj->first )))
+            {
+                CGAL_Point current( curr->x(), curr->y(), curr->z() );
+                float dist = CGAL::squared_distance( current, coord );
+                std::list<CGAL_Triangle>::iterator tit = obj->second;
+                CGAL_Triangle t = *tit;
+                if( t.supporting_plane().has_on_positive_side( current )) { continue; }
+
+                if ( dist < min_dist ){
+                    min_dist        = dist;
+                    opposite    = current;
+                }
+            }
+        }        
+    }
+
+    SEQM_helper::SEQM_Point sphereCenter;
+    float sphereRadius;
+    sqem.minimize (sphereCenter, sphereRadius,
+                   SEQM_helper::SEQM_Point ( -100000.0, -100000.0, -100000.0 ),
+                   SEQM_helper::SEQM_Point ( 100000.0, 100000.0, 100000.0 ));
+
+    cs.points[nodeID].coord.x = sphereCenter[0];
+    cs.points[nodeID].coord.y = sphereCenter[1];
+    cs.points[nodeID].coord.z = sphereCenter[2];
+    cs.points[nodeID].radius = sphereRadius;
+    cout << "count : "<< sqem_count
+         << "    Result: optimal sphere centered at [" << sphereCenter[0] << ", " << sphereCenter[1] << ", " << sphereCenter[3] << "], with radius " << sphereRadius << "." << endl;
+
+
+
+
+    assert( nodeID != -1 ); // this should be ok if
+
+    // per ogni nodo dello scheletro
+        // prendi tutte le direzioni uscenti
+        // considera il piano determinato dal nodo e la direzione uscente
+        // interseca la mesh con il piano, prendendo solo i triangoli per i quali il nodo sta sul semispazio negativo
+        // -- qui eventualmente si dovrebbero filtrare gli outlier, ma bisognerebbe capire come farlo
+
+        // usa SEQM per calcolare la sfera che meglio approssima i punti trovati
 }
 
 #endif

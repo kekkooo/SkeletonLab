@@ -47,6 +47,9 @@ static void paint( mesh &m, int mode)
 //        std::cout << "drawing flat" << "# n vertices  " << m.vertices.size() << endl;
 		for(int f_id = 0; f_id < m.polygons.size(); ++f_id)
 		{
+            Primitives::ColorF& c = m.f_colors[f_id];
+            glColor4f( c._v[0], c._v[1], c._v[2], 0.5);
+
 			RMesh::MeshPolygon& t = m.polygons[f_id];
 			if(t.no_vertices() == 3 )
 			{
@@ -65,10 +68,12 @@ static void paint( mesh &m, int mode)
 
 			for( int pi = 0; pi < m.polygons[f_id].vertices.size(); ++pi )
 			{
+
 				Primitives::Point3d &p = m.vertices[t.vertices[pi]];
 				glVertex3f( p[0], p[1], p[2] );
 			}
 
+            glColor4f(0.5, 0.5, 0.5, 0.5);
 			glEnd();
 		}
 	}

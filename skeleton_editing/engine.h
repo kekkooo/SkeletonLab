@@ -30,6 +30,8 @@ public
         void alignSkelWithPCA ();
 
         void buildBoundingVolumeHierarchy();
+        void approximateSkel();
+        void centerSkeletonWithSQEM();
 
 		
 signals:

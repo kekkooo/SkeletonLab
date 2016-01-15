@@ -53,6 +53,7 @@ private:
 	QAction *redo;
 	QAction *articulation;
     QAction *buildBVH;
+    QAction *approximate;
 //    QAction *freezeNonFeaturePoints;
 
     // MESH MENU
@@ -61,8 +62,9 @@ private:
 	QAction *testSkeletonInside;
 	QAction *centerSkeleton;
 	QAction *centerAndRefitSkeleton;
+    QAction *centerWithSQEM;
     QAction *resetNodesSize;
-    QAction *alignSkelWithPCA;
+    QAction *alignSkelWithPCA;    
 
     // POINTS MENU
 	QAction *deleteNode;

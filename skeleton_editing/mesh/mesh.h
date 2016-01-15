@@ -14,6 +14,7 @@
 #include <QString>
 #include <primitives/BBox.h>
 #include <primitives/geometry.h>
+#include <primitives/color.h>
 
 using namespace std;
 
@@ -39,6 +40,7 @@ namespace RMesh
     typedef K::Segment_3                                                                    CGAL_Segment;
 	typedef K::Plane_3                                                                      CGAL_Plane;
 	typedef K::Vector_3                                                                     CGAL_Vector;
+    typedef K::Direction_3                                                                  CGAL_Direction;
 	typedef std::list<CGAL_Triangle>::iterator                                              CGAL_Triangle_Iterator;
 #endif
 
@@ -92,6 +94,7 @@ public:
 	static  void cube               ( QString filename, mesh &m    );
 	static  void load               ( QString filename, mesh &m    );
 	static  void buildNormals       ( mesh &m );
+    static  void buildColors         ( mesh &m );
 			void clear              ();
 
 
@@ -109,7 +112,8 @@ public:
 	vector< Primitives::Point3d >   vertices;
 	vector< Primitives::Vector3d>   v_normals;
 	vector< Primitives::Vector3d>   f_normals;
-	Primitives::BBoxD               bbox;
+    vector< Primitives::ColorF>     f_colors;
+    Primitives::BBoxD               bbox;
 	MeshPCA                         axes;
 };
 #ifdef use_cgal

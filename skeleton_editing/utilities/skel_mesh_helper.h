@@ -3,6 +3,7 @@
 #include <mesh/mesh.h>
 #include <skel/base.h>
 
+
 using namespace RMesh;
 using namespace Skel;
 using namespace Primitives;
@@ -11,7 +12,7 @@ namespace RMesh{
 	namespace Utils{
 
 		typedef RMesh::K::Ray_3                                                                  CGAL_Ray;
-		typedef RMesh::K::Segment_3                                                              CGAL_Segment;
+		typedef RMesh::K::Segment_3                                                              CGAL_Segment;                      
 		typedef CGAL::AABB_triangle_primitive<K,CGAL_Triangle_Iterator>                          CGAL_Triangle_Primitive;
 		typedef CGAL::AABB_traits<K, CGAL_Triangle_Primitive>                                    AABB_triangle_traits;
 		typedef CGAL::AABB_tree<AABB_triangle_traits>                                            CGAL_AABB_Tree;
@@ -37,7 +38,8 @@ namespace RMesh{
 			void setMesh                    ( mesh *m );
 			void checkSkeletonInsideMesh    ( CurveSkeleton& cs );
 			void put_back_inside            ( CurveSkeleton *cs );
-			void re_center                  (CurveSkeleton *&cs , bool refit);
+            void re_center                  ( CurveSkeleton *&cs , bool refit);
+            void centeringWithSQEM          ( CurveSkeleton &cs, bool refit, int nodeID = -1 );
 
 			// static functions
 			static bool is_inside( CGAL_AABB_Tree &aabb, Point3d query );

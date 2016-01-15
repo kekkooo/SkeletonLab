@@ -98,6 +98,10 @@ void MainWindow::createActions(){
     buildBVH->setStatusTip(tr("Build collision detection hierarchy"));
     connect( buildBVH, SIGNAL(triggered()), engine, SLOT(buildBoundingVolumeHierarchy()));
 
+    approximate = new QAction(tr("&Approximate Skel"), this);
+    approximate->setStatusTip(tr("Approximate the skeleton using a modified Donald-Peuker algorithm"));
+    connect( approximate, SIGNAL(triggered()), engine, SLOT(approximateSkel()));
+
     // POINTS MENU
 	deleteNode = new QAction(tr("&Delete Node"), this);
 	deleteNode->setShortcut(QKeySequence::Delete);
@@ -151,6 +155,10 @@ void MainWindow::createActions(){
 	centerAndRefitSkeleton->setStatusTip(tr("Center the skeleton inside the mesh and resize its balls"));
 	connect( centerAndRefitSkeleton, SIGNAL(triggered()), engine, SLOT(centerAndResizeSkeleton()));
 
+    centerWithSQEM = new QAction(tr("&Center Skel with SQEM"), this);
+    centerWithSQEM->setStatusTip(tr("Center the skeleton inside the mesh and resize its balls using the SQEM"));
+    connect( centerWithSQEM, SIGNAL(triggered()), engine, SLOT(centerSkeletonWithSQEM()));
+
 	resetNodesSize = new QAction(tr("&Reset node's size"), this);
 	resetNodesSize->setStatusTip(tr("Reset the max balls to a standard non-harmful size"));
 	connect( resetNodesSize, SIGNAL(triggered()), engine, SLOT(resetNodeSize()));
@@ -181,6 +189,7 @@ void MainWindow::createMenus()
 	editMenu->addSeparator();
 	editMenu->addAction(articulation);
     editMenu->addAction(buildBVH);
+    editMenu->addAction(approximate);
 
 	pointsMenu = menuBar()->addMenu(tr("&Points"));
 	pointsMenu->addAction(deleteNode);
@@ -198,6 +207,7 @@ void MainWindow::createMenus()
 	meshMenu->addAction(testSkeletonInside);
 	meshMenu->addAction(centerSkeleton);
 	meshMenu->addAction(centerAndRefitSkeleton);
+    meshMenu->addAction(centerWithSQEM);
 	meshMenu->addAction(resetNodesSize);
 	meshMenu->addAction(alignSkelWithPCA);
 }

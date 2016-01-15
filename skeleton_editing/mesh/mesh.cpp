@@ -36,11 +36,21 @@ void RMesh::mesh::buildNormals(mesh &m)
     }
 }
 
+void RMesh::mesh::buildColors(mesh &m){
+    m.f_colors = std::vector<Primitives::ColorF>();
+    Primitives::ColorF c( 0.5, 0.5, 0.5 );
+    //Primitives::ColorF c( 1.0, 0.0, 0.0 );
+    for( int i = 0; i < m.polygons.size(); i++ ){
+        m.f_colors.push_back( c );
+    }
+}
+
 void RMesh::mesh::clear()
 {
     this->vertices.clear();
     this->polygons.clear();
     this->f_normals.clear();
+    this->f_colors.clear();
     this->bbox = Primitives::BBoxD();
 }
 
@@ -115,8 +125,10 @@ void RMesh::mesh::load(QString filename, RMesh::mesh &m)
     else cout << endl << ext.toStdString() << " is not a supported file format";
 
     buildPCA( m );
+    buildColors( m );
     m.bbox.Set( m.vertices );
     m.axes.center = m.bbox.Center();
+
 #endif
 }
 
