@@ -29,6 +29,18 @@ namespace RMesh{
 			IntersectionResult() { is_valid = false; }
 		};
 
+        struct SQEM_centering_data{
+            CGAL_Plane plane;
+            CGAL_Segment segment;
+            size_t intersected_triangle_index;
+            double distance;
+            double z_score;
+            double z_score_mod;
+            bool is_outlier = false;
+        };
+
+        inline bool compare_SQEM_centering_data( SQEM_centering_data l, SQEM_centering_data r ){ return l.distance < r.distance; }
+
         typedef std::pair<IntersectionResult, IntersectionResult> ir_pair;
 
 		class skel_mesh_helper
@@ -53,6 +65,8 @@ namespace RMesh{
 																vector<IntersectionResult>& vir );
             void                        compute_paired_intersections( CGAL_Plane plane, CGAL_Point curr,
                                                                       vector<Utils::ir_pair> &pairs );
+            void                        PlaneMeshIntersectionForSQEM(const CGAL_Plane& plane, const CGAL_Point &origin_point,
+                                                                      std::vector<SQEM_centering_data>& results );
 		};
 
 

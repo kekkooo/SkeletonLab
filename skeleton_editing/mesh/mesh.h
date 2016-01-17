@@ -46,6 +46,7 @@ namespace RMesh
 
 struct MeshTriangle
 {
+    std::vector<size_t> neighbors;
 	int p0, p1, p2;
 	MeshTriangle( int index0, int index1, int index2 )
 	{
@@ -58,7 +59,8 @@ struct MeshTriangle
 
 struct MeshPolygon
 {
-	vector<int> vertices;
+    std::vector<int> vertices;
+    std::set<size_t> neighbors;
 	MeshPolygon() { }
 	MeshPolygon( int p0, int p1, int p2 )
 	{

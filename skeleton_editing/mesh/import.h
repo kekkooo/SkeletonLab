@@ -94,6 +94,26 @@ static void from_obj( RMesh::mesh &m, QString filename)
             }
         }
 
+
+        // crappy code for building adiacency
+        typedef std::pair<size_t, size_t> halfedge;
+        typedef std::map<halfedge, size_t> edge_to_face_map;
+
+        edge_to_face_map edge_to_face;
+
+        for( size_t fid = 0; fid < m.polygons.size(); ++fid ){
+            MeshPolygon& p = m.polygons.at( fid );
+            for( size_t i = 0; i < p.no_vertices(); ++i ){
+                size_t next = (i+1) % p.no_vertices();
+                edge_to_face[ make_pair( p.vertices[i], p.vertices[ next ]) ] = fid;
+            }
+        }
+
+        for( const auto& item : edge_to_face ){
+            halfedge edge_to_search = make_pair( item.first.second, item.first.first );
+            m.polygons[item.second].neighbors.insert( edge_to_face[edge_to_search] );
+        }
+
         m.bbox.Set(m.vertices);
 
 }
@@ -158,6 +178,26 @@ static void from_off( RMesh::mesh &m, QString filename)
         m.polygons.push_back(f);
 
     }
+
+    // crappy code for building adiacency
+    typedef std::pair<size_t, size_t> halfedge;
+    typedef std::map<halfedge, size_t> edge_to_face_map;
+
+    edge_to_face_map edge_to_face;
+
+    for( size_t fid = 0; fid < m.polygons.size(); ++fid ){
+        MeshPolygon& p = m.polygons.at( fid );
+        for( size_t i = 0; i < p.no_vertices(); ++i ){
+            size_t next = (i+1) % p.no_vertices();
+            edge_to_face[ make_pair( p.vertices[i], p.vertices[ next ]) ] = fid;
+        }
+    }
+
+    for( const auto& item : edge_to_face ){
+        halfedge edge_to_search = make_pair( item.first.second, item.first.first );
+        m.polygons[item.second].neighbors.insert( edge_to_face[edge_to_search] );
+    }
+
     m.bbox.Set(m.vertices);
     file.close();
 }
