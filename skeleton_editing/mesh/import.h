@@ -196,6 +196,7 @@ static void from_off( RMesh::mesh &m, QString filename)
     for( const auto& item : edge_to_face ){
         halfedge edge_to_search = make_pair( item.first.second, item.first.first );
         m.polygons[item.second].neighbors.insert( edge_to_face[edge_to_search] );
+//        std::cout << "face " << item.second << " has neighbor " << ( edge_to_face[edge_to_search] ) << std::endl;
     }
 
     m.bbox.Set(m.vertices);

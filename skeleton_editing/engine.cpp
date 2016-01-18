@@ -119,18 +119,11 @@ void Engine::centerAndResizeSkeleton()
 }
 
 void Engine::resetNodeSize()
-{
-    if( this->skel && this->_mesh )
-    {
-        double size = this->_mesh->bbox.Diagonal() / 250;
-        for( int i = 0; i < skel->points.size(); ++i )
-        {
-            skel->points[i].radius = size;
-        }
-        emit updateSkeleton(skel);
-    }
+{       
+    if( _skelMeshHelper == NULL ) return;
+    _skelMeshHelper->ResetMaximalBalls( *skel );
 
-
+    emit updateSkeleton(skel);
 }
 
 void Engine::alignSkelWithPCA()
@@ -181,5 +174,14 @@ void Engine::centerSkeletonWithSQEM(){
     RMesh::mesh::buildColors( *_mesh );
     _skelMeshHelper->centeringWithSQEM( *skel, true, selected_id );
     emit updateSkeleton( skel );
+}
 
+void Engine::cleanupClusters(){
+    Skel::Update::CleanupClustersAtBranchingNodes( *skel );
+    emit updateSkeleton( skel );
+}
+
+void Engine::collapseSpurious(){
+    Skel::Update::CollapseSpuriousBranches( *skel );
+    emit updateSkeleton( skel );
 }

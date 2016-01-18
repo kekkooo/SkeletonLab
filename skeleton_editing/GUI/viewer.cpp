@@ -1064,7 +1064,7 @@ void Viewer::drawWithNames()
 			}
 			else
 			{
-				Skel::Paint::paintGLWithNamesInBoneMode( this->skel, this->skeleton_draw_mode, 0.02 * this->sceneRadius() );
+                Skel::Paint::paintGLWithNamesInBoneMode( this->skel, this->skeleton_draw_mode, 0.02 * this->sceneRadius() );
 			}
 		}
 	}
@@ -1158,7 +1158,7 @@ void Viewer::mousePressEvent(QMouseEvent* e)
 			QGLViewer::mousePressEvent(e);
 		}
 	}
-	else if (currentEditType == BONE_EDIT)
+    else if (currentEditType == BONE_EDIT)
 	{
 		if (e->button() == Qt::LeftButton && e->modifiers() == Qt::ShiftModifier && false == operationIsActive)
 		{
@@ -2227,6 +2227,20 @@ void Viewer::findNearest( double x, double y, double z )
 	}
 }
 
+void Viewer::collapseBranch(){
+
+    if(selection_.size() <= 0 ) { std::cout << "nothing to do " << std::endl; return; }
+
+    int selected_branch;
+
+    if( currentEditType == BONE_EDIT ){
+         selected_branch = selection_.first();
+    }else{
+        selected_branch = skel->points[selection_.first()].boneID;
+    }
+    UpdateTopology::branchCollapse( *skel, selected_branch );
+    emit updateSkeleton( skel );
+}
 
 
 void Viewer::action_paste()

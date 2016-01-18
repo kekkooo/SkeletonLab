@@ -37,11 +37,10 @@ void RMesh::mesh::buildNormals(mesh &m)
 }
 
 void RMesh::mesh::buildColors(mesh &m){
-    m.f_colors = std::vector<Primitives::ColorF>();
-    Primitives::ColorF c( 0.5, 0.5, 0.5 );
+    m.f_colors = std::vector<Primitives::ColorF>();    
     //Primitives::ColorF c( 1.0, 0.0, 0.0 );
     for( int i = 0; i < m.polygons.size(); i++ ){
-        m.f_colors.push_back( c );
+        m.f_colors.push_back( Primitives::ColorF::LightGrey() );
     }
 }
 

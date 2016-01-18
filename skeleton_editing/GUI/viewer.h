@@ -104,6 +104,8 @@ public slots:
 	void choosePasteNodeWidgetHelpButtonPressed();
 	void choosePasteNodeWidgetCancelButtonPressed();
 
+    void collapseBranch();
+
 signals:
 
 	void transferNeighborsSelected(SkelPoint);
@@ -149,6 +151,7 @@ signals:
 	void deleteBranchingNodeSignal();
 
 	void hideChoosePasteNodeWidget();
+
 
 private:
 

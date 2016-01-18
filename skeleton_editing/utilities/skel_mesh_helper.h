@@ -51,12 +51,15 @@ namespace RMesh{
 			void checkSkeletonInsideMesh    ( CurveSkeleton& cs );
 			void put_back_inside            ( CurveSkeleton *cs );
             void re_center                  ( CurveSkeleton *&cs , bool refit);
+            void ResetMaximalBalls          ( CurveSkeleton &cs );
             void centeringWithSQEM          ( CurveSkeleton &cs, bool refit, int nodeID = -1 );
 
 			// static functions
 			static bool is_inside( CGAL_AABB_Tree &aabb, Point3d query );
-			mesh*                       _mesh;
-		private:
+            static void StatisticalAnalisys( std::vector<SQEM_centering_data>& resulting_data );
+			mesh*                       _mesh;            
+
+        private:
 
 			std::list<CGAL_Triangle>    trilist;
 			CGAL_AABB_Tree*             AABB_Tree;
@@ -67,6 +70,9 @@ namespace RMesh{
                                                                       vector<Utils::ir_pair> &pairs );
             void                        PlaneMeshIntersectionForSQEM(const CGAL_Plane& plane, const CGAL_Point &origin_point,
                                                                       std::vector<SQEM_centering_data>& results );
+            void                        ChooseClosestComponent( std::vector<SQEM_centering_data>& resulting_data );
+            bool                        is_inside( CGAL_Point query );            
+
 		};
 
 

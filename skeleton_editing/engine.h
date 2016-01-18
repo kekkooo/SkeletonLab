@@ -32,6 +32,11 @@ public
         void buildBoundingVolumeHierarchy();
         void approximateSkel();
         void centerSkeletonWithSQEM();
+        void cleanupClusters();
+        void collapseSpurious();
+
+
+
 
 		
 signals:

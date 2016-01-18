@@ -133,10 +133,24 @@ void MainWindow::createActions(){
 	addNodeBetween->setStatusTip(tr("Add a new node between the two selected ones"));
 	connect(addNodeBetween, SIGNAL(triggered()), viewer, SLOT(action_addNodeBetween()));
 
+    cleanupClusters = new QAction(tr("&Cleanup Clusters"), this);
+    cleanupClusters->setStatusTip(tr("Remove Clusters of nodes at branching points"));
+    connect(cleanupClusters, SIGNAL(triggered()), engine, SLOT(cleanupClusters()));
+
+    // BONES MEMU
 	sampling = new QAction(tr("&Resampling"), this);
 	sampling->setShortcut(Qt::Key_S);
 	sampling->setStatusTip(tr("Resample a bone"));
 	connect(sampling, SIGNAL(triggered()), viewer, SLOT(action_sampling()));
+
+    collapseInternal = new QAction(tr("&Collapse Internal"), this);
+    collapseInternal->setStatusTip(tr("Collapse internal selected node"));
+    connect(collapseInternal, SIGNAL(triggered()), viewer, SLOT(collapseBranch()));
+
+    collapseSpurious = new QAction(tr("&Collapse Spurious"), this);
+    collapseSpurious->setStatusTip(tr("Collapse spurious branches"));
+    connect(collapseSpurious, SIGNAL(triggered()), engine, SLOT(collapseSpurious()));
+
 
     //MESH MENU
 	loadMeshAction = new QAction(tr("&Load Mesh"), this);
@@ -197,9 +211,12 @@ void MainWindow::createMenus()
 	pointsMenu->addAction(deleteConnection);
 	pointsMenu->addSeparator();
 	pointsMenu->addAction(addNodeBetween);
+    pointsMenu->addAction(cleanupClusters);
 
 	boneMenu = menuBar()->addMenu(tr("&Bones"));
 	boneMenu->addAction(sampling);
+    boneMenu->addAction(collapseInternal);
+    boneMenu->addAction(collapseSpurious);
 
 	meshMenu = menuBar()->addMenu(tr("&Mesh"));
 	meshMenu->addAction(loadMeshAction);

@@ -9,6 +9,10 @@ namespace Skel
 {
 	namespace UpdateTopology
 	{
+        enum BranchCollapseMode{ START = 0, END = 1, MIDPOINT = 2 };
+
+
+
 		static void check_topology( CurveSkeleton *cs )
 		{
 			// punti : id -> indice
@@ -324,5 +328,54 @@ namespace Skel
 
 //			return cs->points[A].coord.Dist(cs->points[B].coord);
 		}
+
+        static void branchCollapse( CurveSkeleton& cs, int b, BranchCollapseMode mode = MIDPOINT ){
+            assert( b >= 0 && b < cs.bones.size() );
+
+            Skel::Bone& branch = cs.bones[b];
+            // case of a Bn-Ln or Ln-Bn branch
+
+            if( cs.points[ branch.front() ].isLeaf() && cs.points[branch.back()].isLeaf() ){
+                std::cout << "not deleting the only branch";
+                return;
+            }
+
+            if( cs.points[ branch.front() ].isLeaf() || cs.points[branch.back()].isLeaf() ){
+                if( cs.points[branch.front()].isLeaf() ){ branch.reverse(); }
+                for( int i = 1; i < branch.size(); ++i ){ cs.remove( branch[i] ); }
+            }
+            else{
+                // case of a Bn-Bn branch
+                Skel::SkelPoint& new_branching = cs.points[branch.front()];
+                switch(mode){
+                        case START :{
+                        new_branching.coord = cs.points[ branch.front() ].coord;
+                        new_branching.radius = cs.points[ branch.front() ].radius;
+                        break;
+                    }
+                    case END :{
+                        new_branching.coord = cs.points[ branch.back() ].coord;
+                        new_branching.radius = cs.points[ branch.back() ].radius;
+                        break;
+                    }
+                    case MIDPOINT: {
+                        new_branching.coord = Primitives::Point3d::MidPoint( cs.points[ branch.front() ].coord,
+                                                                             cs.points[ branch.back() ].coord );
+                        new_branching.radius = std::max( cs.points[ branch.front() ].radius,
+                                                         cs.points[ branch.back() ].radius );
+                        break;
+                    }
+                }
+
+                for( int i = 1; i < branch.size() - 1; ++i ){ cs.remove( branch[i], false ); }
+
+                for( int neighbor : cs.points[ branch.back()].neighbors ){
+                    UpdateTopology::pointConnect( &cs, new_branching.id, neighbor );
+                }
+                cs.remove( branch.back() );
+            }
+
+            UpdateTopology::garbage_collector( &cs );
+        }
 	}
 }

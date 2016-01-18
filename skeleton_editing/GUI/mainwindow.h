@@ -71,9 +71,12 @@ private:
 	QAction *deselectAll;
 	QAction *deleteConnection;
 	QAction *addNodeBetween;
+    QAction *cleanupClusters;
 
     // BONES MENU
 	QAction *sampling;
+    QAction *collapseInternal;
+    QAction *collapseSpurious;
 
 	void createConnections();
 	void resizeEvent(QResizeEvent *);
