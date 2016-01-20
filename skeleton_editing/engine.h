@@ -4,6 +4,7 @@
 #include <skel/base.h>
 #include <mesh/mesh.h>
 #include <utilities/skel_mesh_helper.h>
+#include <collision_detection/collision_detection.h>
 
 class Engine : public QObject
 {
@@ -18,7 +19,7 @@ public
         void saveSkeleton   ( QString filename );
         void loadSkeleton   ( QString filename );
         void newSkeleton    (                  );
-        void executeSQM     (                  );
+        void executeSQM     (                  );        
         void loadMesh       ( QString filename );
         void showHideMesh   (                  );
         void testSkelInside (                  );
@@ -28,6 +29,15 @@ public
         void resetNodeSize  (                  );
         void alignSkelWithPCA ();
 
+        void buildBoundingVolumeHierarchy();
+        void approximateSkel();
+        void centerSkeletonWithSQEM();
+        void cleanupClusters();
+        void collapseSpurious();
+
+
+
+
 		
 signals:
         void updateSkeleton ( Skel::CurveSkeleton * );
@@ -36,6 +46,7 @@ signals:
 private:
     Skel::CurveSkeleton         * skel;
     RMesh::mesh                 * _mesh;
+    CollisionDetection::BVH     * bvh = NULL;
 	#ifdef use_cgal
     Utils::skel_mesh_helper     * _skelMeshHelper;
 	#endif

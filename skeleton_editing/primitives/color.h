@@ -36,6 +36,7 @@ public :
         static Color Green()    { return Color( 0.0, 1.0, 0.0 ); }
         static Color Blue()     { return Color( 0.0, 0.0, 1.0 ); }
         static Color Yellow()   { return Color( 1.0, 1.0, 0.0 ); }
+        static Color LightGrey(){ return Color( 0.5, 0.5, 0.5 ); }
 
         inline static Color Scatter(int n, int a,float Sat=.3f,float Val=.9f)
         {

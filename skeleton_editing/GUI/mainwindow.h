@@ -41,30 +41,42 @@ private:
 	QMenu *meshMenu;
 //	QMenu *help;
 
+    // FILE MENU
 	QAction *newSkel;
 	QAction *openSkel;
 	QAction *saveSkel;
 
+    // EDIT MENU
 	QAction *copy;
 	QAction *paste;
 	QAction *undo;
 	QAction *redo;
 	QAction *articulation;
+    QAction *buildBVH;
+    QAction *approximate;
+//    QAction *freezeNonFeaturePoints;
 
+    // MESH MENU
 	QAction *loadMeshAction;
 	QAction *showHideMesh;
 	QAction *testSkeletonInside;
 	QAction *centerSkeleton;
 	QAction *centerAndRefitSkeleton;
+    QAction *centerWithSQEM;
     QAction *resetNodesSize;
-    QAction *alignSkelWithPCA;
+    QAction *alignSkelWithPCA;    
 
+    // POINTS MENU
 	QAction *deleteNode;
 	QAction *deselectAll;
 	QAction *deleteConnection;
 	QAction *addNodeBetween;
+    QAction *cleanupClusters;
 
+    // BONES MENU
 	QAction *sampling;
+    QAction *collapseInternal;
+    QAction *collapseSpurious;
 
 	void createConnections();
 	void resizeEvent(QResizeEvent *);
@@ -103,8 +115,8 @@ public slots:
 	void enableAddBetween();
 	void disableAddBetween();
 
-	void enableSampling();
-	void disableSampling();
+    void enableBranchModeFunctions();
+    void disableBranchModeFunctions();
 
 	void enableArticulation();
 	void disableArticulation();

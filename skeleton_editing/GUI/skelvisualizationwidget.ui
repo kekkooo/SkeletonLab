@@ -48,7 +48,7 @@
        <item>
         <widget class="QCheckBox" name="maxBallsBoneCB">
          <property name="text">
-          <string>Max Balls Bone</string>
+          <string>Joint Balls</string>
          </property>
         </widget>
        </item>
@@ -58,14 +58,14 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>Max Balls FP</string>
+          <string>FP's Balls</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QCheckBox" name="bonePointsCB">
          <property name="text">
-          <string>Bone Points</string>
+          <string>Joint Nodes</string>
          </property>
          <property name="checked">
           <bool>true</bool>
@@ -75,7 +75,7 @@
        <item>
         <widget class="QCheckBox" name="featurePointsCB">
          <property name="text">
-          <string>Feature Points</string>
+          <string>Feature Nodes</string>
          </property>
          <property name="checked">
           <bool>true</bool>
@@ -110,7 +110,7 @@
        <item>
         <widget class="QRadioButton" name="boneColorsRB">
          <property name="text">
-          <string>Bone Colors</string>
+          <string>BranchColors</string>
          </property>
          <property name="checked">
           <bool>false</bool>
@@ -123,7 +123,7 @@
     <item>
      <widget class="QCheckBox" name="editTypeCB">
       <property name="text">
-       <string>Bone Edit</string>
+       <string>Branch Edit</string>
       </property>
      </widget>
     </item>

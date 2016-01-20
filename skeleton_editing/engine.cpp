@@ -4,6 +4,8 @@
 #include <skel/export.h>
 #include <skel/import.h>
 #include <skel/edit.h>
+#include <skel/update/approximation.h>
+
 
 
 Engine::Engine()
@@ -25,7 +27,28 @@ void Engine::emitInitialUpdate()
 
 void Engine::loadSkeleton(QString filename)
 {
-	this->skel = Skel::Importer::load_TVCG_2012(filename);
+    QStringList parts = filename.split( QChar( '.' ));
+    int skel_type = -1;
+
+    if ( parts.last( ).toLower() == "skel" )    { skel_type = 0; } // livesu2012
+    if ( parts.last( ).toLower() == "cg" )      { skel_type = 1; } // tagliasacchi2012
+    if ( parts.last( ).toLower() == "cskel" )   { skel_type = 2; } // dey&sun
+
+    switch ( skel_type ) {
+    case 0:
+        this->skel = Skel::Importer::load_TVCG_2012( filename );
+        break;
+    case 1:
+        this->skel = Skel::Importer::load_Tagliasacchi_2012( filename );
+        break;
+    case 2:
+        this->skel = Skel::Importer::load_DeySun_2006( filename );
+        break;
+    default:
+        throw(std::domain_error("File Format not Supported"));
+        break;
+    }
+    //this->skel = Skel::Importer::load_TVCG_2012(filename);
 	emit updateSkeleton(skel);
 }
 
@@ -96,18 +119,11 @@ void Engine::centerAndResizeSkeleton()
 }
 
 void Engine::resetNodeSize()
-{
-    if( this->skel && this->_mesh )
-    {
-        double size = this->_mesh->bbox.Diagonal() / 250;
-        for( int i = 0; i < skel->points.size(); ++i )
-        {
-            skel->points[i].radius = size;
-        }
-        emit updateSkeleton(skel);
-    }
+{       
+    if( _skelMeshHelper == NULL ) return;
+    _skelMeshHelper->ResetMaximalBalls( *skel );
 
-
+    emit updateSkeleton(skel);
 }
 
 void Engine::alignSkelWithPCA()
@@ -124,3 +140,49 @@ void Engine::alignSkelWithPCA()
 
 }
 
+void Engine::buildBoundingVolumeHierarchy(){
+    if( NULL == this->bvh ){
+        assert( NULL != this->skel );
+        bvh = new CollisionDetection::BVH( this->skel );
+    }
+    else bvh->Clear();;
+    bvh->Build();
+}
+
+void Engine::approximateSkel(){
+// TODO it should open a widget allowing to select a "fidelity" or a target reduction of the number of nodes
+    double min_radius = std::numeric_limits<double>::max();
+    double multiplier = 0.25;
+//    for( const Skel::SkelPoint& p : skel->points ) { if( min_radius > p.radius ){ min_radius = p.radius; }}
+
+//    double threshold = ( min_radius / 2.0 ) * multiplier;
+    double threshold = multiplier;    
+
+    Skel::Update::approximate( *this->skel, threshold );
+    emit updateSkeleton( skel );
+}
+
+
+void Engine::centerSkeletonWithSQEM(){
+    //find the selected node
+    int selected_id = -1;
+    for( const auto& p : skel->points ){
+        if( p.isSelected()){ selected_id = p.id; break; }
+    }
+
+    if( _skelMeshHelper == NULL ) return;
+    RMesh::mesh::buildColors( *_mesh );
+    _skelMeshHelper->centeringWithSQEM( *skel, true, selected_id );
+    emit updateSkeleton( skel );
+}
+
+void Engine::cleanupClusters(){
+    Skel::Update::CleanupClustersAtBranchingNodes( *skel );
+    emit updateSkeleton( skel );
+}
+
+void Engine::collapseSpurious(){
+    Skel::UpdateTopology::mergeLeafs( *skel );
+    Skel::Update::CollapseSpuriousBranches( *skel );    
+    emit updateSkeleton( skel );
+}

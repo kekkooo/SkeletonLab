@@ -59,8 +59,9 @@ MainWindow::~MainWindow()
 	delete ui;
 }
 
-void MainWindow::createActions()
-{
+void MainWindow::createActions(){
+
+    // FILE MENU
 	newSkel = new QAction(tr("&New Skeleton"), this);
 	newSkel->setShortcuts(QKeySequence::New);
 	newSkel->setStatusTip(tr("Create new skeleton"));
@@ -76,6 +77,7 @@ void MainWindow::createActions()
 	saveSkel->setStatusTip(tr("Save the skeleton in a file"));
 	connect(saveSkel, SIGNAL(triggered()), this, SLOT(saveSkeletonToFile()));
 
+    //EDIT MENU
 	undo = new QAction(tr("&Undo"), this);
 	undo->setShortcuts(QKeySequence::Undo);
 	undo->setStatusTip(tr("Undo last edit"));
@@ -92,6 +94,15 @@ void MainWindow::createActions()
 	articulation->setStatusTip(tr("Set a node as articulation"));
 	connect(articulation, SIGNAL(triggered(bool)), viewer, SLOT(setNodeArticulationState(bool)));
 
+    buildBVH = new QAction(tr("&Build BVH"), this);
+    buildBVH->setStatusTip(tr("Build collision detection hierarchy"));
+    connect( buildBVH, SIGNAL(triggered()), engine, SLOT(buildBoundingVolumeHierarchy()));
+
+    approximate = new QAction(tr("&Approximate Skel"), this);
+    approximate->setStatusTip(tr("Approximate the skeleton using a modified Donald-Peuker algorithm"));
+    connect( approximate, SIGNAL(triggered()), engine, SLOT(approximateSkel()));
+
+    // POINTS MENU
 	deleteNode = new QAction(tr("&Delete Node"), this);
 	deleteNode->setShortcut(QKeySequence::Delete);
 	deleteNode->setStatusTip(tr("Delete selected node"));
@@ -122,11 +133,26 @@ void MainWindow::createActions()
 	addNodeBetween->setStatusTip(tr("Add a new node between the two selected ones"));
 	connect(addNodeBetween, SIGNAL(triggered()), viewer, SLOT(action_addNodeBetween()));
 
+    cleanupClusters = new QAction(tr("&Cleanup Clusters"), this);
+    cleanupClusters->setStatusTip(tr("Remove Clusters of nodes at branching points"));
+    connect(cleanupClusters, SIGNAL(triggered()), engine, SLOT(cleanupClusters()));
+
+    // BONES MEMU
 	sampling = new QAction(tr("&Resampling"), this);
 	sampling->setShortcut(Qt::Key_S);
-	sampling->setStatusTip(tr("Resample a bone"));
+    sampling->setStatusTip(tr("Resample a Branch"));
 	connect(sampling, SIGNAL(triggered()), viewer, SLOT(action_sampling()));
 
+    collapseInternal = new QAction(tr("&Collapse Branch"), this);
+    collapseInternal->setStatusTip(tr("Collapse the selected Branch"));
+    connect(collapseInternal, SIGNAL(triggered()), viewer, SLOT(collapseBranch()));
+
+    collapseSpurious = new QAction(tr("&Collapse Spurious"), this);
+    collapseSpurious->setStatusTip(tr("Collapse spurious Branches"));
+    connect(collapseSpurious, SIGNAL(triggered()), engine, SLOT(collapseSpurious()));
+
+
+    //MESH MENU
 	loadMeshAction = new QAction(tr("&Load Mesh"), this);
 	loadMeshAction->setStatusTip(tr("Load a polygonal mesh"));
 	connect( loadMeshAction, SIGNAL(triggered()), this, SLOT(openMesh()));
@@ -142,6 +168,10 @@ void MainWindow::createActions()
 	centerAndRefitSkeleton = new QAction(tr("&Center and refit skel"), this);
 	centerAndRefitSkeleton->setStatusTip(tr("Center the skeleton inside the mesh and resize its balls"));
 	connect( centerAndRefitSkeleton, SIGNAL(triggered()), engine, SLOT(centerAndResizeSkeleton()));
+
+    centerWithSQEM = new QAction(tr("&Center Skel with SQEM"), this);
+    centerWithSQEM->setStatusTip(tr("Center the skeleton inside the mesh and resize its balls using the SQEM"));
+    connect( centerWithSQEM, SIGNAL(triggered()), engine, SLOT(centerSkeletonWithSQEM()));
 
 	resetNodesSize = new QAction(tr("&Reset node's size"), this);
 	resetNodesSize->setStatusTip(tr("Reset the max balls to a standard non-harmful size"));
@@ -172,6 +202,8 @@ void MainWindow::createMenus()
 	editMenu->addAction(paste);
 	editMenu->addSeparator();
 	editMenu->addAction(articulation);
+    editMenu->addAction(buildBVH);
+    editMenu->addAction(approximate);
 
 	pointsMenu = menuBar()->addMenu(tr("&Points"));
 	pointsMenu->addAction(deleteNode);
@@ -179,9 +211,12 @@ void MainWindow::createMenus()
 	pointsMenu->addAction(deleteConnection);
 	pointsMenu->addSeparator();
 	pointsMenu->addAction(addNodeBetween);
+    pointsMenu->addAction(cleanupClusters);
 
-	boneMenu = menuBar()->addMenu(tr("&Bones"));
+    boneMenu = menuBar()->addMenu(tr("&Branches"));
 	boneMenu->addAction(sampling);
+    boneMenu->addAction(collapseInternal);
+    boneMenu->addAction(collapseSpurious);
 
 	meshMenu = menuBar()->addMenu(tr("&Mesh"));
 	meshMenu->addAction(loadMeshAction);
@@ -189,6 +224,7 @@ void MainWindow::createMenus()
 	meshMenu->addAction(testSkeletonInside);
 	meshMenu->addAction(centerSkeleton);
 	meshMenu->addAction(centerAndRefitSkeleton);
+    meshMenu->addAction(centerWithSQEM);
 	meshMenu->addAction(resetNodesSize);
 	meshMenu->addAction(alignSkelWithPCA);
 }
@@ -210,19 +246,19 @@ void MainWindow::createConnections()
 	connect( engine, SIGNAL(updateSkeleton(Skel::CurveSkeleton*)), viewer, SLOT(updateSkeleton(Skel::CurveSkeleton*)));
 	connect( engine, SIGNAL(updateMesh(RMesh::mesh*)),             viewer, SLOT(updateMesh(RMesh::mesh*)));
 
-	// FROM skelVisualizationWidget to viewer
-    connect( skelVisualizationWidget, SIGNAL(featurePointsChanged(bool)),           viewer, SLOT(drawSkelFPs(bool)));
-    connect( skelVisualizationWidget, SIGNAL(bonePointsChanged(bool)),              viewer, SLOT(drawSkelBonePs(bool)));
-    connect( skelVisualizationWidget, SIGNAL(maxBallsChanged(bool)),                viewer, SLOT(drawSkelMaxBalls(bool)));
-    connect( skelVisualizationWidget, SIGNAL(maxBallsBoneChanged(bool)),            viewer, SLOT(drawSkelMaxBallsBP(bool)));
-    connect( skelVisualizationWidget, SIGNAL(defaultColor(bool)),                   viewer, SLOT(drawSkelDefaultColors(bool)));
-    connect( skelVisualizationWidget, SIGNAL(boneColor(bool)),                      viewer, SLOT(drawSkelBoneColors(bool)));
-    connect( skelVisualizationWidget, SIGNAL(editModeChanged(bool)),                viewer, SLOT(editTypeChanged(bool)));
-    connect( skelVisualizationWidget, SIGNAL(nodeFusionChanged(bool)),              viewer, SLOT(nodeFusionChanged(bool)));
-    connect( skelVisualizationWidget, SIGNAL(meshLimitChanged(bool)),               viewer, SLOT(meshLimitChanged(bool)));
+    // FROM skelVisualizationWidget to viewer
+	connect( skelVisualizationWidget, SIGNAL(featurePointsChanged(bool)),   viewer, SLOT(drawSkelFPs(bool)));
+    connect( skelVisualizationWidget, SIGNAL(bonePointsChanged(bool)),      viewer, SLOT(drawSkelBonePs(bool)));
+	connect( skelVisualizationWidget, SIGNAL(maxBallsChanged(bool)),        viewer, SLOT(drawSkelMaxBalls(bool)));
+	connect( skelVisualizationWidget, SIGNAL(maxBallsBoneChanged(bool)),    viewer, SLOT(drawSkelMaxBallsBP(bool)));
+	connect( skelVisualizationWidget, SIGNAL(defaultColor(bool)),           viewer, SLOT(drawSkelDefaultColors(bool)));
+	connect( skelVisualizationWidget, SIGNAL(boneColor(bool)),              viewer, SLOT(drawSkelBoneColors(bool)));
+	connect( skelVisualizationWidget, SIGNAL(editModeChanged(bool)),        viewer, SLOT(editTypeChanged(bool)));
+	connect( skelVisualizationWidget, SIGNAL(nodeFusionChanged(bool)),		viewer, SLOT(nodeFusionChanged(bool)));
+	connect( skelVisualizationWidget, SIGNAL(meshLimitChanged(bool)),		viewer, SLOT(meshLimitChanged(bool)));
     connect( skelVisualizationWidget, SIGNAL(constrainedTranslationChanged(bool)),  viewer, SLOT(constrainedTranslationChanged(bool)));
 
-	// FROM mainwindow to viewer
+    // FROM mainwindow to viewer
 	connect( this, SIGNAL(loadSkeleton(QString)), viewer, SLOT(load_new_skeleton()));
 	connect( this, SIGNAL(createNewSkeleton()),   viewer, SLOT(load_new_skeleton()));
 
@@ -249,8 +285,8 @@ void MainWindow::createConnections()
 	connect( viewer, SIGNAL(disableDeleteConnection()),	this, SLOT(disableDeleteConnection()));
 	connect( viewer, SIGNAL(enableAddBetween()),		this, SLOT(enableAddBetween()));
 	connect( viewer, SIGNAL(disableAddBetween()),		this, SLOT(disableAddBetween()));
-	connect( viewer, SIGNAL(enableSampling()),			this, SLOT(enableSampling()));
-	connect( viewer, SIGNAL(disableSampling()),			this, SLOT(disableSampling()));
+    connect( viewer, SIGNAL(enableBranchModeFunctions()),			this, SLOT(enableBranchModeFunctions()));
+    connect( viewer, SIGNAL(disableBranchModeFunctions()),			this, SLOT(disableBranchModeFunctions()));
 	connect( viewer, SIGNAL(enableArticulation()),		this, SLOT(enableArticulation()));
 	connect( viewer, SIGNAL(disableArticulation()),		this, SLOT(disableArticulation()));
 
@@ -291,7 +327,8 @@ void MainWindow::openSkeletonFile()
 	QString filename = QFileDialog::getOpenFileName(NULL,
 													"Open skel (TVCG)",
 													".",
-													"skel files (*.skel );;");
+                                                    "LIVESU2012 (*.skel );; TAGLIASACCHI 2012(*.cg);; DEY_SUN 2006 (*.cskel);;"
+                                                    );
 	if (!filename.isEmpty()) emit loadSkeleton(filename);
 
 
@@ -410,14 +447,16 @@ void MainWindow::disableAddBetween()
 	addNodeBetween->setEnabled(false);
 }
 
-void MainWindow::enableSampling()
+void MainWindow::enableBranchModeFunctions()
 {
 	sampling->setEnabled(true);
+    collapseInternal->setEnabled(true);
 }
 
-void MainWindow::disableSampling()
+void MainWindow::disableBranchModeFunctions()
 {
 	sampling->setEnabled(false);
+    collapseInternal->setEnabled(false);
 }
 
 void MainWindow::enableArticulation()

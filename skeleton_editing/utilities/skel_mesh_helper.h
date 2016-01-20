@@ -3,6 +3,7 @@
 #include <mesh/mesh.h>
 #include <skel/base.h>
 
+
 using namespace RMesh;
 using namespace Skel;
 using namespace Primitives;
@@ -11,7 +12,7 @@ namespace RMesh{
 	namespace Utils{
 
 		typedef RMesh::K::Ray_3                                                                  CGAL_Ray;
-		typedef RMesh::K::Segment_3                                                              CGAL_Segment;
+		typedef RMesh::K::Segment_3                                                              CGAL_Segment;                      
 		typedef CGAL::AABB_triangle_primitive<K,CGAL_Triangle_Iterator>                          CGAL_Triangle_Primitive;
 		typedef CGAL::AABB_traits<K, CGAL_Triangle_Primitive>                                    AABB_triangle_traits;
 		typedef CGAL::AABB_tree<AABB_triangle_traits>                                            CGAL_AABB_Tree;
@@ -28,6 +29,18 @@ namespace RMesh{
 			IntersectionResult() { is_valid = false; }
 		};
 
+        struct SQEM_centering_data{
+            CGAL_Plane plane;
+            CGAL_Segment segment;
+            size_t intersected_triangle_index;
+            double distance;
+            double z_score;
+            double z_score_mod;
+            bool is_outlier = false;
+        };
+
+        inline bool compare_SQEM_centering_data( SQEM_centering_data l, SQEM_centering_data r ){ return l.distance < r.distance; }
+
         typedef std::pair<IntersectionResult, IntersectionResult> ir_pair;
 
 		class skel_mesh_helper
@@ -37,12 +50,16 @@ namespace RMesh{
 			void setMesh                    ( mesh *m );
 			void checkSkeletonInsideMesh    ( CurveSkeleton& cs );
 			void put_back_inside            ( CurveSkeleton *cs );
-			void re_center                  (CurveSkeleton *&cs , bool refit);
+            void re_center                  ( CurveSkeleton *&cs , bool refit);
+            void ResetMaximalBalls          ( CurveSkeleton &cs );
+            void centeringWithSQEM          ( CurveSkeleton &cs, bool refit, int nodeID = -1 );
 
 			// static functions
 			static bool is_inside( CGAL_AABB_Tree &aabb, Point3d query );
-			mesh*                       _mesh;
-		private:
+            static void StatisticalAnalisys( std::vector<SQEM_centering_data>& resulting_data );
+			mesh*                       _mesh;            
+
+        private:
 
 			std::list<CGAL_Triangle>    trilist;
 			CGAL_AABB_Tree*             AABB_Tree;
@@ -51,6 +68,11 @@ namespace RMesh{
 																vector<IntersectionResult>& vir );
             void                        compute_paired_intersections( CGAL_Plane plane, CGAL_Point curr,
                                                                       vector<Utils::ir_pair> &pairs );
+            void                        PlaneMeshIntersectionForSQEM(const CGAL_Plane& plane, const CGAL_Point &origin_point,
+                                                                      std::vector<SQEM_centering_data>& results );
+            void                        ChooseClosestComponent( std::vector<SQEM_centering_data>& resulting_data );
+            bool                        is_inside( CGAL_Point query );            
+
 		};
 
 

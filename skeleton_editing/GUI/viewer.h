@@ -30,6 +30,7 @@
 #include "utilities/manipulatedFrameSetConstraint.h"
 #include "utilities/polyfit.h"
 #include "utilities/skel_mesh_helper.h"
+#include "collision_detection/collision_detection.h"
 
 using namespace UpdateTopology;
 
@@ -104,6 +105,8 @@ public slots:
 	void choosePasteNodeWidgetHelpButtonPressed();
 	void choosePasteNodeWidgetCancelButtonPressed();
 
+    void collapseBranch();
+
 signals:
 
 	void transferNeighborsSelected(SkelPoint);
@@ -137,8 +140,8 @@ signals:
 	void changeNodeFusion(Qt::CheckState);
 	void changeMeshLimit(Qt::CheckState);
 
-	void enableSampling();
-	void disableSampling();
+    void enableBranchModeFunctions();
+    void disableBranchModeFunctions();
 
 	void enableArticulation();
 	void disableArticulation();
@@ -149,6 +152,7 @@ signals:
 	void deleteBranchingNodeSignal();
 
 	void hideChoosePasteNodeWidget();
+
 
 private:
 
@@ -181,7 +185,7 @@ private:
 	void addNewNode();
 
 	void clearSelection();
-	void findNearest( double x, double y, double z );
+    void findNearest(double x, double y, double z );
 
 	enum FixedCamera { X_PLUS = 0, X_MINUS = 1, Y_PLUS = 2, Y_MINUS = 3, Z_PLUS = 4, Z_MINUS = 5 };
 	void setFixedCamera( FixedCamera c );
