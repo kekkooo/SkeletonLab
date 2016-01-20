@@ -2307,6 +2307,11 @@ void Viewer::findNearest( double x, double y, double z )
 		}
 	}
 	cout << "il candidato è " << candidate_id << endl;
+
+    if( candidate_id != -1 && constrainedTranslation ){
+        if( !skel->points[candidate_id].isFeaturePoint() ){ return; }
+    }
+
 	if(candidate_id != -1 || (candidate_id != -1 && true == copyActive && copyList.indexOf(candidate_id) != -1))
 	{
 		status.addState((*this->skel), selection_);
