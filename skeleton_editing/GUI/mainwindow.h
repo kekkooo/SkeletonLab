@@ -115,8 +115,8 @@ public slots:
 	void enableAddBetween();
 	void disableAddBetween();
 
-	void enableSampling();
-	void disableSampling();
+    void enableBranchModeFunctions();
+    void disableBranchModeFunctions();
 
 	void enableArticulation();
 	void disableArticulation();

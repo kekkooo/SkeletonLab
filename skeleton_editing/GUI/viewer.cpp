@@ -110,13 +110,14 @@ void Viewer::editTypeChanged(bool b)
 		clearSelection();
 		currentEditType = BONE_EDIT;
 
-		emit enableSampling();
+        emit enableBranchModeFunctions();
+
 
 		emit disableArticulation();
 		emit uncheckArticulation();
 		emit disableCopy();
 		emit disablePaste();
-		emit disableDeleteConnection();
+		emit disableDeleteConnection();        
 	}
 	else
 	{
@@ -145,7 +146,7 @@ void Viewer::editTypeChanged(bool b)
 		clearSelection();
 		currentEditType = NODE_EDIT;
 
-		emit disableSampling();
+        emit disableBranchModeFunctions();
 	}
 }
 
@@ -189,7 +190,7 @@ void Viewer::load_new_skeleton()
 	emit disablePaste();
 	emit disableDeleteConnection();
 	emit disableAddBetween();
-	emit disableSampling();
+    emit disableBranchModeFunctions();
 	emit disableArticulation();
 	emit uncheckArticulation();
 
@@ -288,7 +289,7 @@ void Viewer::action_deselectAll()
 
 		emit enableUndo();
 		emit disableRedo();
-		emit disableSampling();
+        emit disableBranchModeFunctions();
 	}
 }
 
@@ -447,7 +448,7 @@ void Viewer::action_addNodeBetween()
 		UpdateTopology::pointConnect(skel, firstSel.id,newId);
 		UpdateTopology::pointConnect(skel,newId,secondSel.id);
 
-		skel->points[(selection_[0])].deselect();
+        skel->points[(selection_[0])].deselect();
 		skel->points[(selection_[1])].deselect();
 //				selection_.clear();
 
@@ -1150,7 +1151,7 @@ void Viewer::mousePressEvent(QMouseEvent* e)
 			camera()->convertClickToLine( e->pos(), orig, dir );
 			bool found;
 			selectedPoint = camera()->pointUnderPixel(e->pos(), found );
-			findNearest(selectedPoint[0], selectedPoint[1], selectedPoint[2] );
+            findNearest(selectedPoint[0], selectedPoint[1], selectedPoint[2] );
             update();
 		}
 		else
@@ -1160,6 +1161,15 @@ void Viewer::mousePressEvent(QMouseEvent* e)
 	}
     else if (currentEditType == BONE_EDIT)
 	{
+
+        if( e->button() == Qt::LeftButton && e->modifiers() == ( Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier ) ){
+            camera()->convertClickToLine( e->pos(), orig, dir );
+            bool found;
+            selectedPoint = camera()->pointUnderPixel(e->pos(), found );
+            findNearest(selectedPoint[0], selectedPoint[1], selectedPoint[2] );
+            update();
+        }
+
 		if (e->button() == Qt::LeftButton && e->modifiers() == Qt::ShiftModifier && false == operationIsActive)
 		{
 			// Start selection. Mode is ADD with Shift key.
@@ -1420,7 +1430,7 @@ void Viewer::mouseReleaseEvent(QMouseEvent* e)
 
 		if (selection_.size() > 0)
 		{
-			emit enableSampling();
+            emit enableBranchModeFunctions();
 		}
 	}
 }
@@ -2051,7 +2061,7 @@ void Viewer::clearSelection()
 	emit disableCopy();
 	emit disableDeleteConnection();
 	emit disablePaste();
-	emit disableSampling();
+    emit disableBranchModeFunctions();
 	emit uncheckArticulation();
 }
 
@@ -2209,8 +2219,23 @@ void Viewer::findNearest( double x, double y, double z )
 	if(candidate_id != -1 || (candidate_id != -1 && true == copyActive && copyList.indexOf(candidate_id) != -1))
 	{
 		status.addState((*this->skel), selection_);
-		selection_.append(candidate_id);
-		skel->points[candidate_id].select();
+        if( currentEditType == BONE_EDIT ){
+            clearSelection();
+
+            int bone_id = skel->points[candidate_id].boneID;
+            // need this one to pick the right bone
+            selection_.append(bone_id);
+
+//            selection_.append( skel->points[candidate_id].boneID );
+            for( int nodeID : skel->bones[bone_id]){
+                //selection_.append( nodeID );
+                skel->points[nodeID].select();
+            }
+        }else{
+            selection_.append(candidate_id);
+            skel->points[candidate_id].select();
+        }
+
 	}
 
 	if (true == copyActive && selection_.size() > 1)
@@ -2239,6 +2264,7 @@ void Viewer::collapseBranch(){
         selected_branch = skel->points[selection_.first()].boneID;
     }
     UpdateTopology::branchCollapse( *skel, selected_branch );
+    status.addState((*this->skel), selection_);
     emit updateSkeleton( skel );
 }
 

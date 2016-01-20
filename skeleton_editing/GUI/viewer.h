@@ -139,8 +139,8 @@ signals:
 	void changeNodeFusion(Qt::CheckState);
 	void changeMeshLimit(Qt::CheckState);
 
-	void enableSampling();
-	void disableSampling();
+    void enableBranchModeFunctions();
+    void disableBranchModeFunctions();
 
 	void enableArticulation();
 	void disableArticulation();
@@ -182,7 +182,7 @@ private:
 	void addNewNode();
 
 	void clearSelection();
-	void findNearest( double x, double y, double z );
+    void findNearest(double x, double y, double z );
 
 	enum FixedCamera { X_PLUS = 0, X_MINUS = 1, Y_PLUS = 2, Y_MINUS = 3, Z_PLUS = 4, Z_MINUS = 5 };
 	void setFixedCamera( FixedCamera c );

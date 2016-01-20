@@ -376,6 +376,33 @@ namespace Skel
             }
 
             UpdateTopology::garbage_collector( &cs );
+        }	
+
+    static void mergeLeafs( CurveSkeleton& cs ){
+        for( int i = 0; i < cs.points.size(); ++i ){
+            if( !cs.points[i].isLeaf() ){ continue; }
+
+            int closest = -1;
+            double min_dist = std::numeric_limits<double>::max();
+            double threshold = 0;
+            for( int j = 0; j < cs.points.size(); ++j ){
+                if( j == i ) { continue; }
+                if( j == cs.points[i].neighbors.front()){ continue; }
+                double dist = cs.points[i].coord.Dist( cs.points[j].coord );
+                if( dist < min_dist ){
+                    min_dist = dist;
+                    closest = j;
+                    threshold = cs.points[i].radius + cs.points[j].radius;
+                }
+            }
+            assert( closest != -1 );
+            if( min_dist < threshold ){
+                UpdateTopology::pointConnect( &cs, cs.points[i].neighbors.front(), closest );
+                cs.remove(i, false);
+            }
         }
-	}
+        UpdateTopology::garbage_collector( &cs );
+    }
+
+}
 }

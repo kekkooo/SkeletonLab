@@ -6,6 +6,7 @@
 
 QT       += core gui opengl xml widgets
 CONFIG   += qt core opengl thread debug app_bundle c++11
+ICON      = SkeletonLab.icns
 
 #QMAKE_CFLAGS_PPC_64     -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
 #QMAKE_OBJECTIVE_CFLAGS_PPC_64  -= -arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5
@@ -31,7 +32,7 @@ DEFINES += use_cgal         # <- comment if you do not have CGAL installed
 DEFINES += use_gurobi       # <- comment if you do not have GUROBI installed
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = skeleton_editing
+TARGET = "Skeleton Lab"
 TEMPLATE = app
 
 #INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/eigen/

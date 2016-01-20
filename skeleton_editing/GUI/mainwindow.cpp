@@ -140,15 +140,15 @@ void MainWindow::createActions(){
     // BONES MEMU
 	sampling = new QAction(tr("&Resampling"), this);
 	sampling->setShortcut(Qt::Key_S);
-	sampling->setStatusTip(tr("Resample a bone"));
+    sampling->setStatusTip(tr("Resample a Branch"));
 	connect(sampling, SIGNAL(triggered()), viewer, SLOT(action_sampling()));
 
-    collapseInternal = new QAction(tr("&Collapse Internal"), this);
-    collapseInternal->setStatusTip(tr("Collapse internal selected node"));
+    collapseInternal = new QAction(tr("&Collapse Branch"), this);
+    collapseInternal->setStatusTip(tr("Collapse the selected Branch"));
     connect(collapseInternal, SIGNAL(triggered()), viewer, SLOT(collapseBranch()));
 
     collapseSpurious = new QAction(tr("&Collapse Spurious"), this);
-    collapseSpurious->setStatusTip(tr("Collapse spurious branches"));
+    collapseSpurious->setStatusTip(tr("Collapse spurious Branches"));
     connect(collapseSpurious, SIGNAL(triggered()), engine, SLOT(collapseSpurious()));
 
 
@@ -213,7 +213,7 @@ void MainWindow::createMenus()
 	pointsMenu->addAction(addNodeBetween);
     pointsMenu->addAction(cleanupClusters);
 
-	boneMenu = menuBar()->addMenu(tr("&Bones"));
+    boneMenu = menuBar()->addMenu(tr("&Branches"));
 	boneMenu->addAction(sampling);
     boneMenu->addAction(collapseInternal);
     boneMenu->addAction(collapseSpurious);
@@ -248,7 +248,7 @@ void MainWindow::createConnections()
 
 	// FROM skelVisualizationWidget to viewer
 	connect( skelVisualizationWidget, SIGNAL(featurePointsChanged(bool)),   viewer, SLOT(drawSkelFPs(bool)));
-	connect( skelVisualizationWidget, SIGNAL(bonePointsChanged(bool)),      viewer, SLOT(drawSkelBonePs(bool)));
+    connect( skelVisualizationWidget, SIGNAL(bonePointsChanged(bool)),      viewer, SLOT(drawSkelBonePs(bool)));
 	connect( skelVisualizationWidget, SIGNAL(maxBallsChanged(bool)),        viewer, SLOT(drawSkelMaxBalls(bool)));
 	connect( skelVisualizationWidget, SIGNAL(maxBallsBoneChanged(bool)),    viewer, SLOT(drawSkelMaxBallsBP(bool)));
 	connect( skelVisualizationWidget, SIGNAL(defaultColor(bool)),           viewer, SLOT(drawSkelDefaultColors(bool)));
@@ -284,8 +284,8 @@ void MainWindow::createConnections()
 	connect( viewer, SIGNAL(disableDeleteConnection()),	this, SLOT(disableDeleteConnection()));
 	connect( viewer, SIGNAL(enableAddBetween()),		this, SLOT(enableAddBetween()));
 	connect( viewer, SIGNAL(disableAddBetween()),		this, SLOT(disableAddBetween()));
-	connect( viewer, SIGNAL(enableSampling()),			this, SLOT(enableSampling()));
-	connect( viewer, SIGNAL(disableSampling()),			this, SLOT(disableSampling()));
+    connect( viewer, SIGNAL(enableBranchModeFunctions()),			this, SLOT(enableBranchModeFunctions()));
+    connect( viewer, SIGNAL(disableBranchModeFunctions()),			this, SLOT(disableBranchModeFunctions()));
 	connect( viewer, SIGNAL(enableArticulation()),		this, SLOT(enableArticulation()));
 	connect( viewer, SIGNAL(disableArticulation()),		this, SLOT(disableArticulation()));
 
@@ -446,14 +446,16 @@ void MainWindow::disableAddBetween()
 	addNodeBetween->setEnabled(false);
 }
 
-void MainWindow::enableSampling()
+void MainWindow::enableBranchModeFunctions()
 {
 	sampling->setEnabled(true);
+    collapseInternal->setEnabled(true);
 }
 
-void MainWindow::disableSampling()
+void MainWindow::disableBranchModeFunctions()
 {
 	sampling->setEnabled(false);
+    collapseInternal->setEnabled(false);
 }
 
 void MainWindow::enableArticulation()

@@ -182,6 +182,7 @@ void Engine::cleanupClusters(){
 }
 
 void Engine::collapseSpurious(){
-    Skel::Update::CollapseSpuriousBranches( *skel );
+    Skel::UpdateTopology::mergeLeafs( *skel );
+    Skel::Update::CollapseSpuriousBranches( *skel );    
     emit updateSkeleton( skel );
 }

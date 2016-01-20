@@ -175,6 +175,7 @@ void CollapseSpuriousBranches( Skel::CurveSkeleton& cs ){
 void CleanupClustersAtBranchingNodes( Skel::CurveSkeleton& cs ){
 
     double threshold_scale = 1.0;
+    double threshold_scale_for_joints = 0.75;
     for( SkelPoint& p : cs.points ){
         if( !p.isBranchingNode() ){ continue; }
         std::vector<int> bones;
@@ -184,90 +185,39 @@ void CleanupClustersAtBranchingNodes( Skel::CurveSkeleton& cs ){
         }
         for( int bone_id : bones ){
             Skel::Bone& branch = cs.bones[ bone_id ];
-            if( branch.front() != p.id ){ branch.reverse(); }
 
-            int last = 0, c = 1, next = 2;
-            while( next < branch.size() ){
-                SkelPoint& lastp    = cs.points[last];
-                SkelPoint& currp    = cs.points[c];
-                SkelPoint& nextp    = cs.points[next];
+            int last, c, next, pace;
+            bool go_on= false;
+            if( branch.front() == p.id ){
+                last = 0; pace = 1;
+            }else{
+                last = branch.size() - 1;
+                pace = -1;
+            }
+            c    = last + pace;
+            next = c + pace;
+            go_on = (pace == 1 ? next < branch.size() : next >= 0);
+            while( go_on ){
+                SkelPoint& lastp    = cs.points[ branch[last] ];
+                SkelPoint& currp    = cs.points[ branch[c ] ];
+                SkelPoint& nextp    = cs.points[ branch[next] ];
 
-                double threshold = ( lastp.radius + currp.radius ) * threshold_scale;
+                double threshold = ( lastp.radius + currp.radius );
+                threshold *= lastp.isJoint() ? threshold_scale_for_joints : threshold_scale;
+
                 if( lastp.coord.Dist( currp.coord ) < threshold ){
                     cs.remove( branch[c], false );
                     Skel::UpdateTopology::pointConnect( &cs, branch[last], branch[next] );
                 }
                 else{ last = c; }
-                c++;
-                next++;
+                c    += pace;
+                next += pace;
+                go_on = pace == 1 ? next < branch.size() : next >= 0;
             }
         }
     }
     UpdateTopology::garbage_collector( &cs );
 
-
-
-//            bool done = false;
-//            while( !done ){
-//                double threshold = ( p.radius + cs.points[neighbor].radius ) * threshold_scale;
-//                if( p.coord.Dist( cs.points[neighbor].coord ) < threshold ){
-//                    //assert( cs.points[neighbor].isJoint() );
-//                    if( cs.points[neighbor].isJoint() ){
-
-//                        int next =
-//                                cs.points[neighbor].neighbors[0] == p.id ? cs.points[neighbor].neighbors[1]
-//                                                                         : cs.points[neighbor].neighbors[0];
-//                        cs.remove(neighbor, false);
-//                        UpdateTopology::pointConnect( &cs, p.id, next );
-//                        neighbor = next;
-//                    }
-//                    else{ done = true; }
-
-//                }else{ done = true; }
-//            }
-//        }
-//    }
-
-//    for( int i = 0; i < cs.bones.size(); ++i ){
-//        auto& b = cs.bones[i];
-//        double threshold_scale = 1.0;
-
-
-//        if( cs.points[b.front()].isBranchingNode() ){
-//            Skel::SkelPoint &branching = cs.points[b.front()];
-//            size_t index = 1;
-//            bool done = false;
-//            while( index < b.size() - 1 && !done ){
-
-//                double threshold = ( branching.radius + cs.points[b[index]].radius ) * threshold_scale;
-//                if( branching.coord.Dist( cs.points[b[index]].coord ) < threshold ){
-//                    UpdateTopology::pointConnect( &cs, branching.id, b[index + 1] );
-//                    cs.remove( b[index], false );
-//                    ++index;
-//                }
-//                else{
-//                    done = true;
-//                }
-//            }
-//        }
-//        if( cs.points[b.back()].isBranchingNode() ){
-//            Skel::SkelPoint &branching = cs.points[b.back()];
-//            size_t index = b.size() - 1;
-//            bool done = false;
-//            while( index > 1 && !done ){
-//                double threshold = ( branching.radius + cs.points[b[index]].radius ) * threshold_scale;
-//                if( branching.coord.Dist( cs.points[ b[index] ].coord ) < threshold ){
-//                    UpdateTopology::pointConnect( &cs, branching.id, b[index - 1] );
-//                    cs.remove( b[index], false );
-//                    --index;
-//                }
-//                else{
-//                    done = true;
-//                }
-//            }
-//        }
-//    }
-//    UpdateTopology::garbage_collector( &cs );
 }
 
 }
