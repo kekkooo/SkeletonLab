@@ -54,6 +54,7 @@ private:
 	QAction *articulation;
     QAction *buildBVH;
     QAction *approximate;
+    QAction *smoothing;
 //    QAction *freezeNonFeaturePoints;
 
     // MESH MENU
@@ -63,6 +64,8 @@ private:
 	QAction *centerSkeleton;
 	QAction *centerAndRefitSkeleton;
     QAction *centerWithSQEM;
+    QAction *centerWithCuttingPlanes;
+    QAction *centerWithEllipseFitting;
     QAction *resetNodesSize;
     QAction *alignSkelWithPCA;    
 

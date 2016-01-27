@@ -5,6 +5,7 @@
 #include <skel/import.h>
 #include <skel/edit.h>
 #include <skel/update/approximation.h>
+#include <skel/update/smoothing.h>
 
 
 
@@ -176,6 +177,20 @@ void Engine::centerSkeletonWithSQEM(){
     emit updateSkeleton( skel );
 }
 
+void Engine::centerWithCuttingPlanes(){
+    _skelMeshHelper->centerWithCuttingPlanes( *skel );
+    emit updateSkeleton( skel );
+}
+
+void Engine::centerWithEllipseFitting(){
+    int selected_id = -1;
+    for( const auto& p : skel->points ){
+        if( p.isSelected()){ selected_id = p.id; break; }
+    }
+    _skelMeshHelper->centerWithEllipseFitting(*skel, selected_id);
+    emit updateSkeleton( skel );
+}
+
 void Engine::cleanupClusters(){
     Skel::Update::CleanupClustersAtBranchingNodes( *skel );
     emit updateSkeleton( skel );
@@ -184,5 +199,11 @@ void Engine::cleanupClusters(){
 void Engine::collapseSpurious(){
     Skel::UpdateTopology::mergeLeafs( *skel );
     Skel::Update::CollapseSpuriousBranches( *skel );    
+    emit updateSkeleton( skel );
+}
+
+void Engine::smoothSkel(){
+    Skel::Update::Smooth( *skel );
+
     emit updateSkeleton( skel );
 }

@@ -2,6 +2,7 @@
 #ifdef use_cgal
 #include <mesh/mesh.h>
 #include <skel/base.h>
+#include "ellipse_fitting.h"
 
 
 using namespace RMesh;
@@ -53,10 +54,14 @@ namespace RMesh{
             void re_center                  ( CurveSkeleton *&cs , bool refit);
             void ResetMaximalBalls          ( CurveSkeleton &cs );
             void centeringWithSQEM          ( CurveSkeleton &cs, bool refit, int nodeID = -1 );
+            void centerWithCuttingPlanes    ( CurveSkeleton &cs );
+            void centerWithEllipseFitting   (CurveSkeleton &cs , int nodeID = -1 );
+
 
 			// static functions
 			static bool is_inside( CGAL_AABB_Tree &aabb, Point3d query );
             static void StatisticalAnalisys( std::vector<SQEM_centering_data>& resulting_data );
+            static void getSkeletalDirection( const CurveSkeleton &cs, const SkelPoint &p, CGAL_Vector &dir );
 			mesh*                       _mesh;            
 
         private:

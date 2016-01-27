@@ -336,7 +336,7 @@ void Utils::skel_mesh_helper::PlaneMeshIntersectionForSQEM( const CGAL_Plane& pl
         CGAL_Plane sup_plane = t.supporting_plane();
 
         // if point is inside I should avoid computing wrong faces
-        if( query_point_inside && sup_plane.has_on_positive_side( origin_point ) ){ continue; }
+//        if( query_point_inside && sup_plane.has_on_positive_side( origin_point ) ){ continue; }
 
         SQEM_centering_data data;
 
@@ -347,7 +347,9 @@ void Utils::skel_mesh_helper::PlaneMeshIntersectionForSQEM( const CGAL_Plane& pl
         }
         else{
             std::cout << "intersection is not a segment, please consider to improve your code with point intersections" << std::endl;
-            assert(false);
+
+            continue;
+            //assert(false);
         }
 
         // color the intesected triangles
@@ -403,21 +405,29 @@ void Utils::skel_mesh_helper::StatisticalAnalisys( std::vector<SQEM_centering_da
 
 //    std::cout << "standard deviation : " << sd << " and mad " << mad << std::endl;
 
+//    double zscore_threshold = 3.5; // 0.9991 intervallo di confidenza
+//    double zscore_threshold = 1.96; // 0.95 intervallo di confidenza
+    double zscore_threshold = 1.0; // inventato da me
+
     for( SQEM_centering_data &SQEM_data : resulting_data ){
         SQEM_data.z_score = ( SQEM_data.distance - mean ) / sd;
         SQEM_data.z_score_mod = ( 0.6745 * ( SQEM_data.distance - mean )) / mad;
 
 //        std::cout << SQEM_data.distance << " # z score : " << SQEM_data.z_score << " and modified z score " << SQEM_data.z_score_mod << std::endl;
 
-//        if( SQEM_data.z_score_mod > 3.5 ){
-//            //SQEM_data.is_outlier = true;
-//        }
+        if( SQEM_data.z_score_mod > zscore_threshold ){
+            SQEM_data.is_outlier = true;
+        }
 
-        if( SQEM_data.distance > median ){ SQEM_data.is_outlier = true; }
+//        if( SQEM_data.distance > median ){ SQEM_data.is_outlier = true; }
     }
 }
 
 void Utils::skel_mesh_helper::ChooseClosestComponent( std::vector<SQEM_centering_data>& resulting_data ){
+//    assert(resulting_data.size() > 0);
+    if( resulting_data.size() == 0 ){
+        return;
+    }
     std::sort( resulting_data.begin(), resulting_data.end(), compare_SQEM_centering_data );
     size_t closest_tri = resulting_data.front().intersected_triangle_index;
     std::queue<size_t> tris_to_check;
@@ -445,44 +455,138 @@ void Utils::skel_mesh_helper::ChooseClosestComponent( std::vector<SQEM_centering
     for( auto& item : resulting_data ){
         if( good_ones.count( item.intersected_triangle_index ) == 0 ){ item.is_outlier = true; }
     }
-
 }
+
+
+void Utils::skel_mesh_helper::getSkeletalDirection( const CurveSkeleton &cs, const SkelPoint &p, CGAL_Vector &dir ){
+    CGAL_Point coord        = build_CGAL_Point( p.coord );
+    if( p.isJoint() ){
+        const SkelPoint& prev   = cs.points.at( p.neighbors[0] );
+        const SkelPoint& next   = cs.points.at( p.neighbors[1] );
+        CGAL_Point cgal_prev    = build_CGAL_Point( prev.coord );
+        CGAL_Point cgal_next    = build_CGAL_Point( next.coord );
+                   dir          =  ( cgal_next - coord ) + ( coord - cgal_prev );
+    }
+    else{
+        assert( p.isLeaf() );
+        CGAL_Point cgal_prev    = build_CGAL_Point( cs.points.at( p.neighbors[0] ).coord );
+                   dir          = ( coord - cgal_prev );
+    }
+}
+
+void Utils::skel_mesh_helper::centerWithCuttingPlanes(CurveSkeleton &cs){
+    std::map<int, Primitives::Point3d>  new_coords;
+    std::map<int, double>               new_radii;
+
+    // deal with normal nodes
+    for( const SkelPoint& p : cs.points ){
+        if( p.isBranchingNode() ){ continue; }
+        std::vector<SQEM_centering_data> resulting_data;
+        CGAL_Vector dir;
+        CGAL_Point coord        = build_CGAL_Point( p.coord );
+        getSkeletalDirection( cs, p, dir );
+        CGAL_Plane plane( coord, dir );
+        PlaneMeshIntersectionForSQEM( plane, coord, resulting_data );
+        ChooseClosestComponent( resulting_data );
+        // set as outlier each bad data
+        StatisticalAnalisys( resulting_data );
+
+        bool   first = true;
+        size_t count = 0;
+        for( const SQEM_centering_data& d : resulting_data ){
+            if( d.is_outlier ) { continue; }
+            CGAL_Point midpoint_intersection   = CGAL::midpoint( d.segment.source(), d.segment.target() );
+            if( first ){
+                new_coords[p.id] = build_Point3d( midpoint_intersection );
+                new_radii[p.id]  = sqrt( d.distance );
+                first = false;
+            }else{
+                new_coords[p.id] += build_Point3d( midpoint_intersection );
+                new_radii[p.id]  += sqrt( d.distance );
+                first = false;
+            }
+            ++count;
+        }
+        new_coords[p.id] /= (double)count;
+        new_radii[p.id]  /= (double)count;
+    }
+
+    // deal with branching nodes
+    for( const SkelPoint& p : cs.points ){
+        if( !p.isBranchingNode() ){ continue; }
+        bool   first = true;
+        size_t count = 0;
+        for( int neighbor : p.neighbors ){
+            std::vector<SQEM_centering_data> resulting_data;
+
+            CGAL_Point coord        = build_CGAL_Point( p.coord );
+            CGAL_Point neigh        = build_CGAL_Point( cs.points[neighbor].coord );
+            CGAL_Vector dir         = neigh - coord;
+            CGAL_Plane plane( neigh, dir );
+            PlaneMeshIntersectionForSQEM( plane, coord, resulting_data );
+            ChooseClosestComponent( resulting_data );
+            // set as outlier each bad data
+            StatisticalAnalisys( resulting_data );
+
+            for( const SQEM_centering_data& d : resulting_data ){
+                if( d.is_outlier ) { continue; }
+                CGAL_Point midpoint_intersection   = CGAL::midpoint( d.segment.source(), d.segment.target() );
+                if( first ){
+                    new_coords[p.id] = build_Point3d( midpoint_intersection );
+                    new_radii[p.id]  = sqrt( d.distance );
+                    first = false;
+                }else{
+                    new_coords[p.id] += build_Point3d( midpoint_intersection );
+                    new_radii[p.id]  += sqrt( d.distance );
+                    first = false;
+                }
+                ++count;
+            }
+        }
+        new_coords[p.id] /= static_cast<double>( count );
+        new_radii[p.id]  /= static_cast<double>( count );
+    }
+    for( SkelPoint& p : cs.points ){
+        p.coord     = new_coords[p.id];
+        p.radius    = new_radii[p.id];
+    }
+}
+
 
 void Utils::skel_mesh_helper::centeringWithSQEM( CurveSkeleton &cs, bool refit, int nodeID){
 
-//    assert( nodeID < cs.points.size() );
     ColorF intersected_face_color( 1.0, 0.0, 0.0 );
 
     // seleziona un punto e questo verrà ricentrato
 //    const SkelPoint& p = cs.points.at( nodeID );
 
-    std::vector<Primitives::Point3d> new_coords(cs.points.size());
-    std::vector<double> new_radii(cs.points.size());
+    bool cherry_pick = nodeID >= 0 && nodeID < cs.points.size();
 
-    for( const SkelPoint& p : cs.points ){
+    std::map<int, Primitives::Point3d>  new_coords;
+    std::map<int, double>               new_radii;
 
+//    for( const SkelPoint& p : cs.points ){
+    for( SkelPoint& p : cs.points ){
+
+        if( cherry_pick && p.id != nodeID ){ continue; }
         if( p.isBranchingNode() ){ continue; }
-//        if( ( nodeID != -1 ) && p.id != nodeID ) { continue; }
 
         std::vector<SQEM_centering_data> resulting_data;
         CGAL_Vector dir;
         CGAL_Point coord        = build_CGAL_Point( p.coord );
 
-        if( p.isJoint() ){
-            const SkelPoint& prev   = cs.points.at( p.neighbors[0] );
-            const SkelPoint& next   = cs.points.at( p.neighbors[1] );
-            CGAL_Point cgal_prev    = build_CGAL_Point( prev.coord );
-            CGAL_Point cgal_next    = build_CGAL_Point( next.coord );
-                       dir          =  ( cgal_next - coord ) + ( coord - cgal_prev );
-        }
-        else{
-            assert( p.isLeaf() );
-            CGAL_Point cgal_prev    = build_CGAL_Point( cs.points.at( p.neighbors[0] ).coord );
-                       dir          = ( coord - cgal_prev );
-        }
+        getSkeletalDirection( cs, p, dir );
         CGAL_Plane plane( coord, dir );
 
         PlaneMeshIntersectionForSQEM( plane, coord, resulting_data );
+
+        assert( resulting_data.size() > 0 );
+
+        if(resulting_data.size() == 0){
+            cout << p.id << ") deleted " << p.isDeleted() << "coords : " << p.coord.x << ", " << p.coord.y << ", "<< p.coord.z << endl;
+            p.setArticulation(true);
+        }
+
         ChooseClosestComponent( resulting_data );
         // set as outlier each bad data
         StatisticalAnalisys( resulting_data );
@@ -493,25 +597,27 @@ void Utils::skel_mesh_helper::centeringWithSQEM( CurveSkeleton &cs, bool refit, 
         bool first = true;
         SQEM sqem;
 
-
         for( const SQEM_centering_data& d : resulting_data ){
 
 //            std::cout << d.intersected_triangle_index << std::endl;
             if( d.is_outlier ) {
-                _mesh->f_colors[d.intersected_triangle_index] = Primitives::ColorF::LightGrey();
-//                _mesh->f_colors[d.intersected_triangle_index] = Primitives::ColorF::Blue();
+                if( cherry_pick ){
+                    _mesh->f_colors[d.intersected_triangle_index] = Primitives::ColorF::Blue();
+                }else{
+                    _mesh->f_colors[d.intersected_triangle_index] = Primitives::ColorF::LightGrey();
+                }
                 continue;
             }
-
-            CGAL_Point point_on_plane   = CGAL::midpoint( d.segment.source(), d.segment.target() );
-            //assert( d.plane.has_on( point_on_plane ));
+            CGAL_Point midpoint         = CGAL::midpoint( d.segment.source(), d.segment.target() );
+            CGAL_Point point_on_plane   = plane.projection( midpoint );
             CGAL_Vector plane_dir       = d.plane.orthogonal_vector();
+//            CGAL_Vector plane_dir       = point_on_plane - coord;
             double length               = sqrt( plane_dir.squared_length());
 
             CGAL_Vector plane_normal( plane_dir.x()/length, plane_dir.y()/length, plane_dir.z()/length );
 
-//            std::cout << "point on plane: " << point_on_plane << std::endl
-//                      << "normal        : " << plane_normal.x() << ", " << plane_normal.y() << ", " << plane_normal.z() << std::endl;
+            std::cout << "point on plane: " << point_on_plane << std::endl
+                      << "normal        : " << plane_normal.x() << ", " << plane_normal.y() << ", " << plane_normal.z() << std::endl;
 
             if( first ){
                 first = false;
@@ -574,6 +680,135 @@ void Utils::skel_mesh_helper::centeringWithSQEM( CurveSkeleton &cs, bool refit, 
         size_t min_reference = 10;
         CGAL_Point new_coord( sphereCenter[0], sphereCenter[1], sphereCenter[2] );
         if( sqem_count >= min_reference && is_inside( new_coord ) ){
+            CGAL_Point projected_coord = plane.projection(new_coord);
+//            new_coords[p.id] = build_Point3d(projected_coord );
+            new_coords[p.id] = build_Point3d(new_coord);
+//            new_coords[p.id ] = Primitives::Point3d( sphereCenter[0], sphereCenter[1], sphereCenter[2] );
+            new_radii[p.id] = sphereRadius;
+        }
+        else{
+            std::cout << "not considering the computed sphere ";
+            if( sqem_count < min_reference ){ std::cout << "due to too few sqem data" << std::endl; } else { std::cout << "new point is outside " << std::endl; }
+            new_coords[p.id ] = p.coord;
+            new_radii[p.id] = p.radius;
+        }
+
+        cout << "count : "<< sqem_count
+             << "    Result: optimal sphere centered at [" << sphereCenter[0] << ", " << sphereCenter[1] << ", " << sphereCenter[3] << "], with radius " << sphereRadius << "." << endl;
+
+    }
+
+    // deal with branching nodes
+    for( const SkelPoint& p : cs.points ){
+
+        if( cherry_pick && p.id != nodeID ){ continue; }
+        if( !p.isBranchingNode() ){ continue; }
+
+        std::vector<SQEM_centering_data> resulting_data;
+
+        CGAL_Point coord        = build_CGAL_Point( p.coord );
+        CGAL_Point farthest = coord;
+        double max_dist = std::numeric_limits<double>::min();
+        size_t sqem_count = 0;
+        bool first = true;
+        SQEM sqem;
+
+        for( int neighbor : p.neighbors ){
+            std::vector<SQEM_centering_data> resulting_data;
+
+
+            CGAL_Point neigh        = build_CGAL_Point( cs.points[neighbor].coord );
+            CGAL_Vector dir         = neigh - coord;
+            CGAL_Plane plane( neigh, dir );
+
+            PlaneMeshIntersectionForSQEM( plane, coord, resulting_data );
+            ChooseClosestComponent( resulting_data );
+            // set as outlier each bad data
+            StatisticalAnalisys( resulting_data );
+
+
+            for( const SQEM_centering_data& d : resulting_data ){
+
+    //            std::cout << d.intersected_triangle_index << std::endl;
+                if( d.is_outlier ) {
+                    if( cherry_pick ){
+                        _mesh->f_colors[d.intersected_triangle_index] = Primitives::ColorF::Blue();
+                    }else{
+                        _mesh->f_colors[d.intersected_triangle_index] = Primitives::ColorF::LightGrey();
+                    }
+                    continue;
+                }
+                CGAL_Point point_on_plane   = CGAL::midpoint( d.segment.source(), d.segment.target() );
+                CGAL_Vector plane_dir       = d.plane.orthogonal_vector();
+                double length               = sqrt( plane_dir.squared_length());
+
+                CGAL_Vector plane_normal( plane_dir.x()/length, plane_dir.y()/length, plane_dir.z()/length );
+
+    //            std::cout << "point on plane: " << point_on_plane << std::endl
+    //                      << "normal        : " << plane_normal.x() << ", " << plane_normal.y() << ", " << plane_normal.z() << std::endl;
+
+                if( first ){
+                    first = false;
+                    sqem.setFromPlan ( SEQM_helper::SEQM_Point( point_on_plane.x(), point_on_plane.y(), point_on_plane.z()),
+                                       SEQM_helper::SEQM_Point( plane_normal.x(), plane_normal.y(), plane_normal.z() ));
+                    ++sqem_count;
+                }else{
+                    sqem += SQEM( SEQM_helper::SEQM_Point( point_on_plane.x(), point_on_plane.y(), point_on_plane.z()),
+                                  SEQM_helper::SEQM_Point( plane_normal.x(), plane_normal.y(), plane_normal.z() ));
+                    ++sqem_count;
+                }
+
+                double dist = CGAL::squared_distance( coord, point_on_plane );
+                if( dist > max_dist ){
+                    max_dist = dist;
+                    farthest = point_on_plane;
+                }
+            }
+        }
+
+        assert( sqem_count > 1 );
+
+        // need to find two intersections on the mesh in order to bound the sphere
+        // one is the farthest point, the other one can be found using a mesh ray intersction
+        CGAL_Ray query_ray( farthest, coord );
+
+        std::list<Ray_intersection> ray_intersections;
+        AABB_Tree->all_intersections( query_ray,  std::back_inserter( ray_intersections ) );
+
+        float min_dist      = MAXFLOAT;
+        CGAL_Point opposite = farthest;
+
+        for(std::list<Ray_intersection>::iterator it = ray_intersections.begin(); it != ray_intersections.end(); ++it){
+            Ray_intersection obj = *it;
+
+            if ( CGAL_Point *curr = boost::get<CGAL_Point>( &( obj->first )))
+            {
+                CGAL_Point current( curr->x(), curr->y(), curr->z() );
+                float dist = CGAL::squared_distance( current, coord );
+                std::list<CGAL_Triangle>::iterator tit = obj->second;
+                CGAL_Triangle t = *tit;
+                if( t.supporting_plane().has_on_positive_side( current )) { continue; }
+
+                if ( dist < min_dist ){
+                    min_dist        = dist;
+                    opposite    = current;
+                }
+            }
+        }
+
+        SEQM_helper::SEQM_Point sphereCenter;
+        float sphereRadius;
+    //    sqem.minimize (sphereCenter, sphereRadius,
+    //                   SEQM_helper::SEQM_Point ( -100000.0, -100000.0, -100000.0 ),
+    //                   SEQM_helper::SEQM_Point ( 100000.0, 100000.0, 100000.0 ));
+
+        sqem.minimize (sphereCenter, sphereRadius,
+                       SEQM_helper::SEQM_Point ( farthest.x(), farthest.y(), farthest.z()),
+                       SEQM_helper::SEQM_Point ( opposite.x(), opposite.y(), opposite.z()));
+
+        size_t min_reference = 10;
+        CGAL_Point new_coord( sphereCenter[0], sphereCenter[1], sphereCenter[2] );
+        if( sqem_count >= min_reference && is_inside( new_coord ) ){
             new_coords[p.id ] = Primitives::Point3d( sphereCenter[0], sphereCenter[1], sphereCenter[2] );
             new_radii[p.id] = sphereRadius;
         }
@@ -590,13 +825,12 @@ void Utils::skel_mesh_helper::centeringWithSQEM( CurveSkeleton &cs, bool refit, 
     }
 
     for( Skel::SkelPoint& p : cs.points ){
-        if( p.isBranchingNode() ){ continue; }
-
-        p.coord     = new_coords[p.id];
-        p.radius    = new_radii[p.id];
-
-//        p.coord = (new_coords[p.id] + p.coord ) / 2.0;
-//        p.radius = ( new_radii[p.id] + p.radius ) / 2.0;
+        if( new_coords.count(p.id) > 0 ){
+            p.coord     = new_coords[p.id];
+        }
+        if( new_radii.count(p.id) > 0 ){
+            p.radius    = new_radii[p.id];
+        }
     }
 
 }
@@ -611,6 +845,96 @@ void Utils::skel_mesh_helper::ResetMaximalBalls( CurveSkeleton &cs ){
 
         p.radius = std::sqrt( CGAL::squared_distance( point_and_primitive.first, test ) );
     }
+}
+
+
+void Utils::skel_mesh_helper::centerWithEllipseFitting( CurveSkeleton &cs, int nodeID  ){
+//    CGAL_Plane plane( CGAL_Point( 0.0, 0.0, 0.0 ), CGAL_Vector( 0.0, 0.0, 1.0 ));
+//    std::vector< CGAL_Point > points;
+//    CGAL_Point center;
+//    double min_radius, max_radius;
+////    1 2 5 7 9 3
+////    7 6 8 7 5 7
+//    points.push_back( CGAL_Point( 1.0, 7.0, 0.0) );
+//    points.push_back( CGAL_Point( 2.0, 6.0, 0.0) );
+//    points.push_back( CGAL_Point( 5.0, 8.0, 0.0) );
+//    points.push_back( CGAL_Point( 7.0, 7.0, 0.0) );
+//    points.push_back( CGAL_Point( 9.0, 5.0, 0.0) );
+//    points.push_back( CGAL_Point( 3.0, 7.0, 0.0) );
+//    Utils::FitEllipseDirect(plane, points, center, min_radius, max_radius );
+//    std::cout << center << std::endl;
+//    std::cout << min_radius << std::endl;
+//    std::cout << max_radius << std::endl;
+
+
+
+    ColorF intersected_face_color( 1.0, 0.0, 0.0 );
+
+    // seleziona un punto e questo verrà ricentrato
+
+    bool cherry_pick = nodeID >= 0 && nodeID < cs.points.size();
+
+    std::map<int, Primitives::Point3d>  new_coords;
+    std::map<int, double>               new_radii;
+
+    for( SkelPoint& p : cs.points ){
+
+        if( cherry_pick && p.id != nodeID ){ continue; }
+        if( p.isBranchingNode() ){ continue; }
+
+        std::vector<SQEM_centering_data> resulting_data;
+        CGAL_Vector dir;
+        CGAL_Point coord        = build_CGAL_Point( p.coord );
+
+        getSkeletalDirection( cs, p, dir );
+        CGAL_Plane plane( coord, dir );
+
+        PlaneMeshIntersectionForSQEM( plane, coord, resulting_data );
+
+        assert( resulting_data.size() > 0 );
+
+        ChooseClosestComponent( resulting_data );
+        // set as outlier each bad data
+//        StatisticalAnalisys( resulting_data );
+
+        std::vector<CGAL_Point> points_on_surface;
+
+       for( const SQEM_centering_data& d : resulting_data ){
+           if( d.is_outlier ) {
+               if( cherry_pick ){
+                   _mesh->f_colors[d.intersected_triangle_index] = Primitives::ColorF::Blue();
+               }else{
+                   _mesh->f_colors[d.intersected_triangle_index] = Primitives::ColorF::LightGrey();
+               }
+               continue;
+           }
+           CGAL_Point midpoint         = CGAL::midpoint( d.segment.source(), d.segment.target() );
+           CGAL_Point point_on_plane   = plane.projection( midpoint );
+           points_on_surface.push_back( point_on_plane );
+       }
+
+       if( points_on_surface.size() <= 5 ){
+           std::cout << " not enough data - skipping point " << p.id << std::endl;
+           new_coords[p.id ] = p.coord;
+       }
+       else{
+           CGAL_Point new_coord;
+           double rmin, rmax;
+           Utils::FitEllipseDirect( plane, points_on_surface, new_coord, rmin, rmax );
+           new_coords[p.id ] = RMesh::build_Point3d( new_coord );
+       }
+       new_radii[p.id]  = p.radius;
+    }
+
+    for( Skel::SkelPoint& p : cs.points ){
+        if( new_coords.count(p.id) > 0 ){
+            p.coord     = new_coords[p.id];
+        }
+//        if( new_radii.count(p.id) > 0 ){
+//            p.radius    = new_radii[p.id];
+//        }
+    }
+
 }
 
 #endif

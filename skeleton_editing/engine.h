@@ -32,8 +32,11 @@ public
         void buildBoundingVolumeHierarchy();
         void approximateSkel();
         void centerSkeletonWithSQEM();
+        void centerWithCuttingPlanes();
+        void centerWithEllipseFitting();
         void cleanupClusters();
         void collapseSpurious();
+        void smoothSkel();
 
 
 

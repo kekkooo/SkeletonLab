@@ -174,8 +174,8 @@ void CollapseSpuriousBranches( Skel::CurveSkeleton& cs ){
 
 void CleanupClustersAtBranchingNodes( Skel::CurveSkeleton& cs ){
 
-    double threshold_scale = 1.0;
-    double threshold_scale_for_joints = 0.75;
+    double threshold_scale = 0.85;
+    double threshold_scale_for_joints = 0.5;
     for( SkelPoint& p : cs.points ){
         if( !p.isBranchingNode() ){ continue; }
         std::vector<int> bones;

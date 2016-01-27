@@ -256,7 +256,9 @@ void Viewer::action_redo()
 
 void Viewer::setNodeArticulationState(bool newState)
 {
-	skel->points[selection_[0]].setArticulation(newState);
+    for( int p : selection_ ){
+        skel->points[p].setArticulation(!skel->points[p].isArticulation());
+    }
 }
 
 void Viewer::action_deselectAll()
@@ -264,7 +266,9 @@ void Viewer::action_deselectAll()
 	if(currentEditType == NODE_EDIT){
 		for(int i = 0; i < selection_.size(); i++)
 		{
-			skel->points[(selection_[i])].deselect();
+            if( selection_[i] >=0 && selection_[i] < skel->points.size() ){
+                skel->points[(selection_[i])].deselect();
+            }
 		}
 
 		if (selection_.size() != 0)
@@ -985,8 +989,9 @@ void Viewer::endSelection(const QPoint&)
 //						{
 							addIdToSelection((selectBuffer())[4*i+3]);
 							index = ((selectBuffer())[4*i+3]);
-
-							this->skel->points[index].select();
+                            if( index >=0 && index < this->skel->points.size() ){
+                                this->skel->points[index].select();
+                            }
 //						}
 
 						break;
@@ -1349,7 +1354,8 @@ void Viewer::mouseReleaseEvent(QMouseEvent* e)
 				}
 			}
 			QGLViewer::mouseReleaseEvent(e);
-		}
+        }
+
 
 		if (selection_.size() == 1)
 		{
@@ -2139,9 +2145,11 @@ void Viewer::clearSelection()
 {
 	if(currentEditType == NODE_EDIT)
 	{
-		for (int i = 0; i < selection_.size(); i++)
-		{
-			skel->points[skel->points.indexOf(selection_[i])].deselect();
+		for (int i = 0; i < selection_.size(); i++){
+
+            if( selection_[i] >= 0 && selection_[i] < skel->points.size() ){
+                skel->points[skel->points.indexOf(selection_[i])].deselect();
+            }
 		}
 
 		selection_.clear();
@@ -2151,8 +2159,8 @@ void Viewer::clearSelection()
 	else
 	{
 		for (int i = 0; i < skel->points.size(); i++)
-		{
-			skel->points[i].deselect();
+		{            
+            skel->points[i].deselect();
 		}
 
 		selection_.clear();

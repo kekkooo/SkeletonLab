@@ -102,6 +102,12 @@ void MainWindow::createActions(){
     approximate->setStatusTip(tr("Approximate the skeleton using a modified Donald-Peuker algorithm"));
     connect( approximate, SIGNAL(triggered()), engine, SLOT(approximateSkel()));
 
+    smoothing = new QAction(tr("&Smooth Skel"), this);
+    smoothing->setStatusTip(tr("Apply smoothing to skel"));
+    connect( smoothing, SIGNAL(triggered()), engine, SLOT(smoothSkel()));
+
+    QAction *smoothing;
+
     // POINTS MENU
 	deleteNode = new QAction(tr("&Delete Node"), this);
 	deleteNode->setShortcut(QKeySequence::Delete);
@@ -173,6 +179,15 @@ void MainWindow::createActions(){
     centerWithSQEM->setStatusTip(tr("Center the skeleton inside the mesh and resize its balls using the SQEM"));
     connect( centerWithSQEM, SIGNAL(triggered()), engine, SLOT(centerSkeletonWithSQEM()));
 
+    centerWithCuttingPlanes = new QAction(tr("&Center with cutting planes "), this );
+    centerWithCuttingPlanes->setStatusTip(tr("Center the skeleton inside the mesh and resize its balls using cutting planes"));
+    connect( centerWithCuttingPlanes, SIGNAL(triggered()), engine, SLOT( centerWithCuttingPlanes()));
+
+
+    centerWithEllipseFitting = new QAction(tr("&Center with Ellipse Fitting"), this );
+    centerWithEllipseFitting->setStatusTip(tr("Center the skeleton inside the mesh and resize its balls using ellipse fitting"));
+    connect( centerWithEllipseFitting, SIGNAL(triggered()), engine, SLOT( centerWithEllipseFitting()));
+
 	resetNodesSize = new QAction(tr("&Reset node's size"), this);
 	resetNodesSize->setStatusTip(tr("Reset the max balls to a standard non-harmful size"));
 	connect( resetNodesSize, SIGNAL(triggered()), engine, SLOT(resetNodeSize()));
@@ -204,6 +219,7 @@ void MainWindow::createMenus()
 	editMenu->addAction(articulation);
     editMenu->addAction(buildBVH);
     editMenu->addAction(approximate);
+    editMenu->addAction(smoothing);
 
 	pointsMenu = menuBar()->addMenu(tr("&Points"));
 	pointsMenu->addAction(deleteNode);
@@ -225,6 +241,8 @@ void MainWindow::createMenus()
 	meshMenu->addAction(centerSkeleton);
 	meshMenu->addAction(centerAndRefitSkeleton);
     meshMenu->addAction(centerWithSQEM);
+    meshMenu->addAction(centerWithCuttingPlanes);
+    meshMenu->addAction(centerWithEllipseFitting);
 	meshMenu->addAction(resetNodesSize);
 	meshMenu->addAction(alignSkelWithPCA);
 }

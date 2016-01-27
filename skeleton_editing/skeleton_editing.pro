@@ -19,7 +19,7 @@ DEFINES += UNIX
 DEFINES += OSX
 DEFINES += use_boost        # <- comment if you do not have Boost installed
 DEFINES += use_cgal         # <- comment if you do not have CGAL installed
-DEFINES += use_gurobi       # <- comment if you do not have GUROBI installed
+#DEFINES += use_gurobi       # <- comment if you do not have GUROBI installed
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = "Skeleton Lab"
@@ -30,6 +30,7 @@ INCLUDEPATH += /usr/local/include/
 INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/libQGLViewer-2.6.3
 INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/boost_1_59_0/BUILD109/include
 INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/cgal-releases-CGAL-4.7/BUILD109/include
+INCLUDEPATH += /Users/francescousai/Documents/Sviluppo/Libs/eigen/
 #use_gurobi{
 INCLUDEPATH += /Library/gurobi650/mac64/include
 #}
@@ -37,10 +38,10 @@ LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/libQGLViewer-2.6.3/QGL
 LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/boost_1_59_0/BUILD109/lib -lboost_system-mt-s
 LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/boost_1_59_0/BUILD109/lib -lboost_thread-mt-s
 LIBS    += -L/Users/francescousai/Documents/Sviluppo/Libs/cgal-releases-CGAL-4.7/BUILD109/lib -lCGAL
-#use_gurobi{
+use_gurobi{
 LIBS    += -L/Library/gurobi650/mac64/lib -lgurobi_c++
 LIBS    += -L/Library/gurobi650/mac64/lib -lgurobi65
-#}
+}
 
 unix{
 #INCLUDEPATH *= /Users/simonebarbieri/Developer/libQGLViewer-2.5.3
@@ -75,7 +76,8 @@ SOURCES += main.cpp \
 	GUI/singlebranchingnodedeletionwidget.cpp \
     GUI/choosepastenodewidget.cpp \
     collision_detection/collision_detection.cpp \
-    collision_detection/bvh_balancing.cpp
+    collision_detection/bvh_balancing.cpp \
+    utilities/ellipse_fitting.cpp
 	#GUI/deletenodewithmultipleneighbors.cpp
 
 HEADERS  += engine.h \
@@ -113,7 +115,9 @@ HEADERS  += engine.h \
     collision_detection/bvh_balancing.h \
     skel/update/approximation.h \
     utilities/SQEM.h \
-    utilities/seqm_helper.h
+    utilities/seqm_helper.h \
+    skel/update/smoothing.h \
+    utilities/ellipse_fitting.h
 #GUI/deletenodewithmultipleneighbors.h
 
 FORMS += GUI/mainwindow.ui \
